@@ -45,6 +45,8 @@ const fakeFiles = (failOnPosition?: number) => {
         .forEach(path => stored.delete(path));
     },
     deleteAllReportFiles: async () => stored.clear(),
+    sizeOf: async path => (stored.has(path) ? 1_000_000 : null),
+    sha256: async () => 'f'.repeat(64),
   };
   return { storage, stored };
 };

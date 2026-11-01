@@ -33,9 +33,35 @@ const pressByLabel = async (renderer: Renderer, label: string) => {
 
 const wait = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
+/** What GET /reports returns in this test (no real server in Jest). */
+const SERVER_LIST = {
+  reports: [
+    {
+      id: '6f1c2a8e-3b4d-4e5f-9a0b-1c2d3e4f5a6b',
+      description: 'Pipe rack support P-17: paint blistering',
+      createdAt: '2026-11-01T10:00:00.000Z',
+      receivedAt: '2026-11-01T10:05:00.000Z',
+      images: [{ position: 0, sizeBytes: 2_100_000, url: null }],
+    },
+  ],
+};
+
 describe('App', () => {
   let errorSpy: jest.SpyInstance;
   let warnSpy: jest.SpyInstance;
+  const realFetch = globalThis.fetch;
+
+  beforeAll(() => {
+    globalThis.fetch = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => SERVER_LIST,
+    })) as unknown as typeof fetch;
+  });
+
+  afterAll(() => {
+    globalThis.fetch = realFetch;
+  });
 
   beforeEach(() => {
     errorSpy = jest.spyOn(console, 'error');
@@ -70,10 +96,9 @@ describe('App', () => {
     expect(texts(app)).toContain('Deletes from this phone');
     await pressByLabel(app, 'Go back');
 
-    // On server: skeleton first, then the list from the mock server
+    // On server: the list comes from GET /reports (faked: no server in Jest)
     await pressByLabel(app, 'On server, reports the server holds');
-    expect(texts(app)).toContain('Checking the server…');
-    await ReactTestRenderer.act(() => wait(1000));
+    await ReactTestRenderer.act(() => wait(50));
     expect(texts(app).some(t => t.includes('Pipe rack support P-17'))).toBe(
       true,
     );

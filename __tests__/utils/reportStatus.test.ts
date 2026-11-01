@@ -1,4 +1,3 @@
-import { MOCK_OUTBOX_ITEMS } from '@mocks';
 import {
   getPhotoDisplayStatus,
   getStatusExplanation,
@@ -6,6 +5,8 @@ import {
   groupOutbox,
   summarizeOutbox,
 } from '@utils/reportStatus';
+
+import { MOCK_OUTBOX_ITEMS } from '../../jest/fixtures/reports';
 
 import type { OutboxItem, Report, ReportStatus } from '@app-types';
 

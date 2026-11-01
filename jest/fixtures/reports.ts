@@ -6,9 +6,8 @@ import type {
 } from '@app-types';
 
 /**
- * UI-phase mock data: one or more reports in every status. Timestamps are
- * relative to app start so "12 min ago" stays believable. Removed in phase 8
- * when the Outbox reads the local database.
+ * Test fixture: one or more reports in every status. Timestamps are
+ * relative to now so relative-time formatting stays believable.
  */
 
 const MINUTE = 60 * 1000;

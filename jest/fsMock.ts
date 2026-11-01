@@ -18,6 +18,8 @@ export const moveFile = jest.fn(async (from: string, to: string) => {
   files.delete(from);
   files.add(to);
 });
+export const stat = jest.fn(async (_path: string) => ({ size: 1_000_000 }));
+export const hash = jest.fn(async (_path: string) => 'f'.repeat(64));
 export const unlink = jest.fn(async (path: string) => {
   [...files]
     .filter(file => file === path || file.startsWith(`${path}/`))

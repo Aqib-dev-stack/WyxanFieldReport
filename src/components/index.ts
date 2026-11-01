@@ -45,6 +45,3 @@ export { default as StatusBadge } from './report/StatusBadge';
 export type { StatusBadgeProps } from './report/StatusBadge';
 export { default as SummaryStrip } from './report/SummaryStrip';
 export type { SummaryStripProps } from './report/SummaryStrip';
-
-export { default as DevScenarioSwitcher } from './dev/DevScenarioSwitcher';
-export type { DevScenarioSwitcherProps } from './dev/DevScenarioSwitcher';

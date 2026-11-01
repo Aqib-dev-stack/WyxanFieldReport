@@ -1,7 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { mockFetchServerReports } from '@mocks';
+import { reportsApi } from '@services';
 import { applyFetchResult } from '@utils/serverReports';
 
 import { useNetworkStatus } from './useNetworkStatus';
@@ -20,8 +20,6 @@ type FetchMode = 'load' | 'refresh' | 'silent';
  * opened (never read from local state). Also retries by itself when the
  * network comes back after a failed load.
  *
- * UI phase: calls the mock API. Phase 8 swaps in the real API client with
- * the same `ApiResult` shape.
  */
 export const useServerReports = () => {
   const [state, setState] = useState<ServerReportsState>({ status: 'loading' });
@@ -49,7 +47,7 @@ export const useServerReports = () => {
       setIsRefreshing(true);
     }
 
-    const result = await mockFetchServerReports();
+    const result = await reportsApi.listReports();
 
     // Only the newest request may update the screen.
     if (!mounted.current || requestId !== latestRequest.current) {
@@ -90,8 +88,5 @@ export const useServerReports = () => {
     [run],
   );
 
-  /** Full reload with the skeleton (used by the dev scenario switcher). */
-  const reload = useCallback(() => run('load'), [run]);
-
-  return { state, isRefreshing, refresh, retry, reload };
+  return { state, isRefreshing, refresh, retry };
 };

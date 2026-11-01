@@ -25,7 +25,6 @@ module.exports = {
           '@config': './src/config',
           '@db': './src/db',
           '@hooks': './src/hooks',
-          '@mocks': './src/mocks',
           '@navigation': './src/navigation',
           '@screens': './src/screens',
           '@services': './src/services',

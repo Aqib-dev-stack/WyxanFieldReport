@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { reportService } from '@services/reports';
+import { reportService } from '@services';
 import { summarizeOutbox } from '@utils/reportStatus';
 
 import { useOutboxReports } from './useOutboxReports';

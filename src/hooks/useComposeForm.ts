@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { REPORT_LIMITS } from '@config';
-import { reportService } from '@services/reports';
+import { reportService } from '@services';
 import { isDraftValid, validateReportDraft } from '@utils/validation';
 
 import type { DraftPhoto } from '@app-types';

@@ -2,8 +2,10 @@ import {
   copyFile,
   DocumentDirectoryPath,
   exists,
+  hash,
   mkdir,
   moveFile,
+  stat,
   unlink,
 } from '@dr.pogodin/react-native-fs';
 
@@ -50,6 +52,10 @@ export type FileStorage = {
   ) => Promise<string>;
   deleteReportFiles: (reportId: string) => Promise<void>;
   deleteAllReportFiles: () => Promise<void>;
+  /** Size in bytes, or null if the file is missing. */
+  sizeOf: (path: string) => Promise<number | null>;
+  /** SHA-256, computed natively (hashing 5 MB in JS would be slow). */
+  sha256: (path: string) => Promise<string>;
 };
 
 export const fileStorage: FileStorage = {
@@ -72,4 +78,8 @@ export const fileStorage: FileStorage = {
   },
   deleteReportFiles: reportId => removeIfPresent(reportFolder(reportId)),
   deleteAllReportFiles: () => removeIfPresent(REPORTS_ROOT),
+  async sizeOf(path) {
+    return (await exists(path)) ? (await stat(path)).size : null;
+  },
+  sha256: path => hash(path, 'sha256'),
 };

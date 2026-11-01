@@ -14,8 +14,6 @@
       "@db": ["./src/db"],
       "@db/*": ["./src/db/*"],
       "@hooks/*": ["./src/hooks/*"],
-      "@mocks": ["./src/mocks"],
-      "@mocks/*": ["./src/mocks/*"],
       "@navigation": ["./src/navigation"],
       "@navigation/*": ["./src/navigation/*"],
       "@screens": ["./src/screens"],

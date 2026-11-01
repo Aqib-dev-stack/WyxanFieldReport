@@ -129,45 +129,19 @@ export const createReportService = ({
       }
     },
 
-    /** Dev only: inserts sample reports in every status to preview the UI. */
-    async addSamples(samples: Report[]): Promise<void> {
-      for (const sample of samples) {
-        const id = newId();
-        await repository.create({
-          id,
-          description: sample.description,
-          createdAt: sample.createdAt,
-          images: sample.images.map(image => ({
-            id: newId(),
-            position: image.position,
-            originalUri: 'sample://placeholder',
-            localPath: null,
-          })),
-        });
-        await repository.update(
-          id,
-          {
-            status: sample.status,
-            attemptCount: sample.attemptCount,
-            lastError: sample.lastError,
-            failureKind: sample.failureKind,
-          },
-          sample.updatedAt,
-        );
-        const saved = await repository.getById(id);
-        for (const [index, image] of (saved?.images ?? []).entries()) {
-          const source = sample.images[index];
-          if (source) {
-            await repository.updateImage(image.id, {
-              status: source.status,
-              sizeBytes: source.sizeBytes,
-              width: source.width,
-              height: source.height,
-            });
-          }
-        }
-      }
+    /**
+     * "Try again" on a failed report: back into the queue with a clean
+     * slate. Photos still `pending` are compressed again first.
+     */
+    async retryReport(id: string): Promise<void> {
+      await repository.update(id, {
+        status: 'queued',
+        failureKind: null,
+        lastError: null,
+        nextAttemptAt: null,
+      });
       await refresh();
+      background.kick();
     },
   };
 };

@@ -14,7 +14,6 @@ const ALIASES = [
   'config',
   'db',
   'hooks',
-  'mocks',
   'navigation',
   'screens',
   'services',

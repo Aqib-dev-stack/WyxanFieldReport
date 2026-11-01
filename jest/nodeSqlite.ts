@@ -1,7 +1,27 @@
-/// <reference types="node" />
-import { DatabaseSync } from 'node:sqlite';
-
 import type { SqlExecutor } from '../src/db/proxy';
+
+/*
+ * Node's built-in SQLite, typed locally: pulling in @types/node would add
+ * Node's globals (AbortSignal, timers...) to the whole React Native program
+ * and clash with React Native's own definitions.
+ */
+type Statement = {
+  columns: () => { name: string }[];
+  run: (...params: (string | number | null)[]) => {
+    changes: number | bigint;
+    lastInsertRowid: number | bigint;
+  };
+  all: (...params: (string | number | null)[]) => unknown[];
+  get: (...params: (string | number | null)[]) => unknown;
+  setReturnArrays: (enabled: boolean) => void;
+};
+type DatabaseSyncT = {
+  prepare: (sql: string) => Statement;
+  close: () => void;
+};
+const { DatabaseSync } = require('node:sqlite') as {
+  DatabaseSync: new (path: string) => DatabaseSyncT;
+};
 
 /**
  * A real, in-memory SQLite (Node's built-in `node:sqlite`) behind the same

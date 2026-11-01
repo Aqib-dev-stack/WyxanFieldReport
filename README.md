@@ -24,7 +24,6 @@ src/
     report/     ReportCard, StatusBadge, SummaryStrip, PhotoThumbnail
   config/       colors, theme tokens (spacing, radius, sizes, type), constants → @config
   hooks/        useNetworkStatus (live NetInfo), useOutboxReports  → @hooks/*
-  mocks/        UI-phase mock data, removed in phase 8               → @mocks
   types/        Report, ReportStatus, OutboxItem                     → @app-types
   navigation/   root stack, main tabs, header adapters, route types  → @navigation
   screens/      Outbox, ServerReports, Compose, ReportDetail, Settings → @screens
@@ -141,9 +140,7 @@ the copies are deleted and nothing is saved; the form keeps the user's input.
 The report id is a v4 UUID from a secure random source
 (`react-native-get-random-values`); it is also the server's idempotency key.
 
-The Outbox, Report detail and Start over read the local database. In
-development builds, Settings has **Add sample reports** to preview every upload
-status.
+The Outbox, Report detail and Start over read the local database.
 
 ## Photos under 5 MB
 
@@ -175,6 +172,59 @@ with a reason, and the others carry on. Start over pauses compression first.
 Originals stay in the report folder next to `<position>-upload.jpg` until
 upload (phase 6), so a damaged upload file can always be rebuilt.
 
+## Upload engine
+
+`src/services/upload/uploadEngine.ts`: no React, unit tested against a fake
+server with the backend's rules (`__tests__/services/uploadEngine.test.ts`).
+
+**Per report:** upload each compressed photo (`PUT /reports/:id/images/:n`),
+then `POST /reports/:id/commit`. Oldest report first. Every step is written
+to SQLite before the next starts (`uploading` → photo `uploaded` → … →
+`committing` → `uploaded`), so after a force-quit the next run continues from
+the exact step:
+
+- photos already `uploaded` are skipped;
+- the photo that was in flight is sent again: same slot, overwritten;
+- a commit whose answer was lost is repeated: the server answers 200 with the
+  report it already has.
+
+**Nothing lands twice:** the report id is a UUID made on the phone, and it is
+the server's `_id`.
+
+**Retry policy** (`retryPolicy.ts`, the only place that decides):
+
+| Failure                               | Decision                               | Status shown                         |
+| ------------------------------------- | -------------------------------------- | ------------------------------------ |
+| No connection, connection dropped     | retry with backoff                     | Saved on phone · waiting for network |
+| Stalled upload, hung server (timeout) | retry with backoff                     | Saved on phone · waiting for network |
+| 5xx, 408, 429                         | retry with backoff                     | Saved on phone · waiting to upload   |
+| 409 `missingImages` on commit         | re-send just those photos, then commit | (same)                               |
+| 413, other 4xx                        | stop: needs the user                   | Upload failed · reason               |
+
+Backoff: exponential (2 s, 4 s, 8 s … capped at 5 min) with full jitter.
+After a temporary failure the engine stops and sets a timer for the next
+retry, instead of hammering the next report over the same dead link.
+
+**Timeouts that allow 2G.** An upload has no total time limit (a 5 MB photo on
+2G can take minutes; slow is fine). It is cut only when no bytes move for
+45 s, or the server stays silent 45 s after the last byte (stall timer,
+re-armed on every progress event). JSON calls time out after 30 s.
+
+**Integrity.** Each photo is sent with its SHA-256 (computed natively); the
+server refuses a damaged image. The engine also re-checks every file is
+≤ 5,000,000 bytes right before sending it.
+
+**Single-flight**, and **pausable**: Start over aborts the request in flight
+and waits before deleting anything.
+
+**Runs** at app start, after a report's photos are compressed, and on its own
+retry timer. Network-regained and app-foreground triggers come next.
+
+**Try it against the chaos modes:** start the backend, `adb reverse tcp:4000
+tcp:4000`, then e.g.
+`curl -X POST localhost:4000/admin/chaos -H 'Content-Type: application/json' -d '{"mode":"drop","times":2}'`
+(see `backend/README.md`).
+
 ## Start over (reset)
 
 Settings → **Start over** is the one deliberate reset. Its reach:
@@ -190,16 +240,16 @@ inspector). The server is the shared record, so a phone can never delete it.
 The confirmation counts the reports that haven't reached the server and says
 they will be lost for good; the confirm button names that consequence.
 
-Order: delete the database rows (one transaction), then the app's photo
-folder. If the app dies in between, the worst case is unused files, never a
-report whose photos are missing. Phase 8 adds stopping the upload runner first,
-so nothing is mid-flight.
+Order: pause compression and uploads (the request in flight is aborted),
+delete the database rows (one transaction), then the app's photo folder. If
+the app dies in between, the worst case is unused files, never a report whose
+photos are missing.
 
 ### After changing Babel or Metro config
 
 Metro caches transformed files and does not notice changes to
 `babel.config.js` or `metro.config.js` (e.g. a new path alias). After such a
-change, restart it with a clean cache, or imports like `@mocks` fail to
+change, restart it with a clean cache, or imports like `@db` fail to
 resolve:
 
 ```sh

@@ -1,5 +1,4 @@
 import { CloudOff, Server, ServerCrash } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -11,7 +10,6 @@ import {
 
 import {
   AppButton,
-  DevScenarioSwitcher,
   EmptyState,
   Screen,
   ServerReportCard,
@@ -19,12 +17,10 @@ import {
 } from '@components';
 import { COLORS, RADIUS, SIZES, SPACING, TYPOGRAPHY } from '@config';
 import { useServerReports } from '@hooks/useServerReports';
-import { getServerScenario, SERVER_SCENARIOS, setServerScenario } from '@mocks';
 import { formatRelativeTime } from '@utils/formatters';
 import { describeApiError } from '@utils/serverReports';
 
 import type { ServerReport } from '@app-types';
-import type { ServerScenario } from '@mocks';
 import type { MainTabScreenProps } from '@navigation/types';
 
 const keyExtractor = (report: ServerReport) => report.id;
@@ -41,17 +37,7 @@ const BIG_ICON = 48;
  * refresh keeps the last list and says how old it is.
  */
 const ServerReports = ({ navigation }: MainTabScreenProps<'ServerReports'>) => {
-  const { state, isRefreshing, refresh, retry, reload } = useServerReports();
-  const [scenario, setScenario] = useState<ServerScenario>(getServerScenario);
-
-  const onScenarioChange = useCallback(
-    (next: ServerScenario) => {
-      setServerScenario(next);
-      setScenario(next);
-      reload();
-    },
-    [reload],
-  );
+  const { state, isRefreshing, refresh, retry } = useServerReports();
 
   const refreshControl = (
     <RefreshControl
@@ -165,19 +151,7 @@ const ServerReports = ({ navigation }: MainTabScreenProps<'ServerReports'>) => {
     );
   };
 
-  return (
-    <Screen padded={false}>
-      {__DEV__ ? (
-        <DevScenarioSwitcher
-          label="DEV"
-          options={SERVER_SCENARIOS}
-          value={scenario}
-          onChange={onScenarioChange}
-        />
-      ) : null}
-      {renderBody()}
-    </Screen>
-  );
+  return <Screen padded={false}>{renderBody()}</Screen>;
 };
 
 const styles = StyleSheet.create({

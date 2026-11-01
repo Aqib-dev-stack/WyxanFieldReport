@@ -50,5 +50,9 @@ export const describeApiError = (error: ApiError): string => {
       return error.status
         ? `The server had a problem (error ${error.status}).`
         : 'The server had a problem.';
+    case 'rejected':
+      return error.status
+        ? `The server refused the request (error ${error.status}).`
+        : 'The server refused the request.';
   }
 };

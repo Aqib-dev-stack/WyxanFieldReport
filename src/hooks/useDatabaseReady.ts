@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { initializeLocalData } from '@services/reports';
+import { initializeLocalData } from '@services';
 
 export type DatabaseStatus = 'opening' | 'ready' | 'failed';
 
