@@ -1,2 +1,7 @@
-export { default as AppNavigator } from './AppNavigator';
-export type { MainTabParamList, MainTabScreenProps } from './types';
+export { default as RootNavigator } from './RootNavigator';
+export type {
+  MainTabParamList,
+  MainTabScreenProps,
+  RootStackParamList,
+  RootStackScreenProps,
+} from './types';

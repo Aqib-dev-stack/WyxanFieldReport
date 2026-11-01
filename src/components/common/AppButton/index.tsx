@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { COLORS } from '@config';
+import { COLORS, RADIUS, SIZES, SPACING } from '@config';
 
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 
@@ -35,7 +35,7 @@ const AppButton = ({
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
-      android_ripple={{ color: COLORS.border }}
+      android_ripple={{ color: COLORS.ripple }}
       style={({ pressed }) => [
         styles.base,
         { backgroundColor: BACKGROUND[variant] },
@@ -57,10 +57,9 @@ const AppButton = ({
 
 const styles = StyleSheet.create({
   base: {
-    // 48dp: minimum accessible touch target.
-    minHeight: 48,
-    paddingHorizontal: 16,
-    borderRadius: 10,
+    minHeight: SIZES.hitTarget,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: RADIUS.md,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',

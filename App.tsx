@@ -2,7 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AppNavigator } from '@navigation';
+import { RootNavigator } from '@navigation';
 
 /**
  * Root providers only. Android draws edge to edge (`edgeToEdgeEnabled`), so
@@ -13,7 +13,7 @@ const App = () => (
   <SafeAreaProvider>
     <StatusBar barStyle="dark-content" />
     <NavigationContainer>
-      <AppNavigator />
+      <RootNavigator />
     </NavigationContainer>
   </SafeAreaProvider>
 );

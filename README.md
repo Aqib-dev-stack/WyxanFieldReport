@@ -18,11 +18,14 @@ A bare React Native CLI + TypeScript app for creating field reports (description
 
 ```
 src/
-  components/   shared UI (AppButton, EmptyState, Screen)          → @components
-  config/       colors, constants                                  → @config
-  navigation/   bottom tabs, route types                           → @navigation
-  screens/      CreateReport, UploadQueue, ServerReports           → @screens
-  hooks/ services/ storage/ utils/   reserved for upcoming features
+  components/
+    common/     AppButton, EmptyState, IconButton, Screen            → @components
+    layout/     AppHeader, NetworkIndicator
+  config/       colors, theme tokens (spacing, radius, sizes, type), constants → @config
+  hooks/        useNetworkStatus (live NetInfo)                      → @hooks/*
+  navigation/   root stack, main tabs, header adapters, route types  → @navigation
+  screens/      Outbox, ServerReports, Compose, ReportDetail, Settings → @screens
+  services/ storage/ utils/   reserved for upcoming features
 ```
 
 Path aliases are declared in `tsconfig.json` (type checking) and `babel.config.js` (Metro and Jest). Keep the two lists in sync, along with `ALIASES` in `.eslintrc.js`.
@@ -30,9 +33,24 @@ Path aliases are declared in `tsconfig.json` (type checking) and `babel.config.j
 ## Navigation
 
 ```
-AppNavigator (bottom tabs)
-  CreateReport (initial) · UploadQueue · ServerReports
+RootStack (native stack)
+  MainTabs (bottom tabs)
+    Outbox (initial)      reports saved on this phone
+    ServerReports         "On server": reports the server holds
+  Compose                 new report
+  ReportDetail            { reportId }
+  Settings                opened from the header
 ```
+
+Every screen uses the same `AppHeader`, with a live network indicator: a green
+Wifi icon when online, a dark WifiOff icon plus "Offline" when not.
+
+### Android 17 note (debug builds)
+
+On an Android 17 (API 37) device or emulator, the first launch of a **debug**
+build asks to "find, connect to, and determine the relative position of nearby
+devices". That is `ACCESS_LOCAL_NETWORK`, added by React Native's debug-only
+manifest so the app can reach Metro. Release builds don't include it.
 
 ---
 

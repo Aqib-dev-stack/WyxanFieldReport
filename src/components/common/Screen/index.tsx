@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { COLORS } from '@config';
+import { COLORS, SPACING } from '@config';
 
 import type { ReactNode } from 'react';
 import type { Edge } from 'react-native-safe-area-context';
@@ -55,8 +55,8 @@ const Screen = ({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.background },
-  content: { flex: 1, padding: 16 },
-  scrollContent: { flexGrow: 1, padding: 16 },
+  content: { flex: 1, padding: SPACING.lg },
+  scrollContent: { flexGrow: 1, padding: SPACING.lg },
 });
 
 export default Screen;

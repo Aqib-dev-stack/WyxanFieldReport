@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { COLORS } from '@config';
+import { COLORS, SPACING, TYPOGRAPHY } from '@config';
 
 import type { ReactNode } from 'react';
 
@@ -24,22 +24,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: SPACING.xl,
   },
   title: {
-    fontSize: 17,
-    fontWeight: '600',
+    ...TYPOGRAPHY.headline,
     color: COLORS.textPrimary,
     textAlign: 'center',
   },
   message: {
-    marginTop: 8,
-    fontSize: 15,
-    lineHeight: 22,
+    marginTop: SPACING.sm,
+    ...TYPOGRAPHY.body,
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
-  action: { marginTop: 24, alignSelf: 'stretch' },
+  action: { marginTop: SPACING.xl, alignSelf: 'stretch' },
 });
 
 export default EmptyState;

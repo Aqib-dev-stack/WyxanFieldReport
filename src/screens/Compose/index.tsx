@@ -3,8 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@components';
 import { COLORS, REPORT_LIMITS } from '@config';
 
-/** Placeholder: the report form (description + photos) comes next. */
-const CreateReport = () => (
+/** Placeholder until UI Step 3: the report form (description + photos). */
+const Compose = () => (
   <Screen scroll>
     <Text style={styles.title}>Create a field report</Text>
     <Text style={styles.intro}>
@@ -45,4 +45,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateReport;
+export default Compose;
