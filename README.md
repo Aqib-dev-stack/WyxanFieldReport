@@ -137,6 +137,36 @@ The Outbox, Report detail and Start over read the local database. In
 development builds, Settings has **Add sample reports** to preview every upload
 status.
 
+## Photos under 5 MB
+
+Every photo is re-encoded to a JPEG of at most **5,000,000 bytes** (the
+stricter reading of "5 MB") before it can be uploaded.
+
+**Off the JS thread.** `@bam.tech/react-native-image-resizer` decodes, scales
+and encodes natively on a background thread; JavaScript only chooses the
+settings and records the result. Photos are processed one at a time, so memory
+stays bounded (an 18 MB JPEG is ~48 MB of pixels once decoded).
+
+**Quality first.** `compressWithinLimit` tries a ladder of settings and stops at
+the first result under the limit: ~8 MP (3264 px) at JPEG 85 first, which is
+usually 1.5–3 MB for an 18 MB camera original; quality drops before resolution
+does. Oversized attempts are deleted. EXIF orientation is applied (portrait
+stays portrait) and metadata is dropped (no GPS sent by accident).
+
+**When.** Right after a report is saved, even offline (compression needs no
+network), and again at app start. When the signal returns, the photos are
+already small.
+
+**Crash-safe.** The report is `compressing` while this runs, and each photo's
+result (`report_images.compressed_path`, size, dimensions, status
+`compressed`) is written to the database as soon as it exists. After a
+force-quit, the next run continues from the first photo still `pending`. If a
+photo can't be prepared (e.g. the file is gone), the report becomes `failed`
+with a reason, and the others carry on. Start over pauses compression first.
+
+Originals stay in the report folder next to `<position>-upload.jpg` until
+upload (phase 6), so a damaged upload file can always be rebuilt.
+
 ## Start over (reset)
 
 Settings → **Start over** is the one deliberate reset. Its reach:

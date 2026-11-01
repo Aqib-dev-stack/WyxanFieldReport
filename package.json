@@ -16,6 +16,7 @@
     "db:pull": "bash scripts/pull-db.sh"
   },
   "dependencies": {
+    "@bam.tech/react-native-image-resizer": "^3.0.11",
     "@dr.pogodin/react-native-fs": "^2.41.0",
     "@op-engineering/op-sqlite": "^19.0.3",
     "@react-native-community/netinfo": "^12.0.1",

@@ -3,6 +3,7 @@ import {
   DocumentDirectoryPath,
   exists,
   mkdir,
+  moveFile,
   unlink,
 } from '@dr.pogodin/react-native-fs';
 
@@ -38,6 +39,15 @@ export type FileStorage = {
     reportId: string,
     position: number,
   ) => Promise<string>;
+  /**
+   * Moves a freshly compressed file to its fixed name in the report folder
+   * (`<position>-upload.jpg`), replacing any earlier attempt; returns the path.
+   */
+  keepUploadFile: (
+    tempPath: string,
+    reportId: string,
+    position: number,
+  ) => Promise<string>;
   deleteReportFiles: (reportId: string) => Promise<void>;
   deleteAllReportFiles: () => Promise<void>;
 };
@@ -52,6 +62,12 @@ export const fileStorage: FileStorage = {
     // A retried save may find a half-copied file from a crash: start clean.
     await removeIfPresent(destination);
     await copyFile(uriToPath(sourceUri), destination);
+    return destination;
+  },
+  async keepUploadFile(tempPath, reportId, position) {
+    const destination = `${reportFolder(reportId)}/${position}-upload.jpg`;
+    await removeIfPresent(destination);
+    await moveFile(tempPath, destination);
     return destination;
   },
   deleteReportFiles: reportId => removeIfPresent(reportFolder(reportId)),

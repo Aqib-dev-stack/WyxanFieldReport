@@ -20,3 +20,9 @@ jest.mock('react-native-image-picker', () => ({
   launchCamera: jest.fn(async () => ({ didCancel: true })),
   launchImageLibrary: jest.fn(async () => ({ didCancel: true })),
 }));
+
+// Native image resizer: never called in Jest (tests inject a fake compressor).
+jest.mock('@bam.tech/react-native-image-resizer', () => ({
+  __esModule: true,
+  default: { createResizedImage: jest.fn() },
+}));

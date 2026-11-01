@@ -9,6 +9,22 @@ export type ReportServiceDeps = {
   files: FileStorage;
   newId: () => string;
   now: () => string;
+  /**
+   * Background work on saved reports (photo compression now, uploads
+   * later). Started after a save; paused around Start over so nothing
+   * writes into a folder that is being deleted.
+   */
+  background?: {
+    kick: () => void;
+    pause: () => Promise<void>;
+    resume: () => void;
+  };
+};
+
+const NO_BACKGROUND = {
+  kick: () => undefined,
+  pause: async () => undefined,
+  resume: () => undefined,
 };
 
 export class InvalidReportError extends Error {}
@@ -26,6 +42,7 @@ export const createReportService = ({
   files,
   newId,
   now,
+  background = NO_BACKGROUND,
 }: ReportServiceDeps) => {
   let snapshot: Report[] = [];
   const listeners = new Set<() => void>();
@@ -90,18 +107,26 @@ export const createReportService = ({
       }
 
       await refresh();
+      // Start compressing right away: it needs no network.
+      background.kick();
       return id;
     },
 
     /**
-     * Start over. Database first, then files: if the app dies in between,
+     * Start over. Background work is paused first (the photo being
+     * compressed finishes), then database, then files: if the app dies in between,
      * the worst case is unused files (cleaned on the next reset), never a
      * report row whose photos are gone.
      */
     async startOver(): Promise<void> {
-      await repository.deleteAll();
-      await files.deleteAllReportFiles();
-      await refresh();
+      await background.pause();
+      try {
+        await repository.deleteAll();
+        await files.deleteAllReportFiles();
+        await refresh();
+      } finally {
+        background.resume();
+      }
     },
 
     /** Dev only: inserts sample reports in every status to preview the UI. */

@@ -42,8 +42,12 @@ export type ReportImage = {
   reportId: string;
   /** 0–4, the order the user picked. Also the slot on the server. */
   position: number;
-  /** The app's own copy of the photo (file:// URI). `null` in mock data. */
+  /** Best local file to show (file:// URI): the upload copy once it exists. */
   localUri: string | null;
+  /** The app's own copy of the original photo (path). */
+  originalPath: string | null;
+  /** The compressed file that gets uploaded, always ≤ 5 MB (path). */
+  uploadPath: string | null;
   /** Size of the file that will be sent; `null` until compressed. */
   sizeBytes: number | null;
   width: number | null;

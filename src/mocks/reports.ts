@@ -69,6 +69,8 @@ const makeReport = ({
       reportId: id,
       position,
       localUri: null,
+      originalPath: null,
+      uploadPath: null,
       // Compressed photos have a known size, always under 5 MB.
       sizeBytes: compressed ? 1_350_000 + position * 420_000 : null,
       width: compressed ? 2400 : null,

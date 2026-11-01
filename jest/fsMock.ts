@@ -14,6 +14,10 @@ export const exists = jest.fn(async (path: string) =>
 export const copyFile = jest.fn(async (_from: string, to: string) => {
   files.add(to);
 });
+export const moveFile = jest.fn(async (from: string, to: string) => {
+  files.delete(from);
+  files.add(to);
+});
 export const unlink = jest.fn(async (path: string) => {
   [...files]
     .filter(file => file === path || file.startsWith(`${path}/`))

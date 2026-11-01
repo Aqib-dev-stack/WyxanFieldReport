@@ -36,8 +36,14 @@ const toReportImage = (row: ReportImageRow): ReportImage => ({
   id: row.id,
   reportId: row.reportId,
   position: row.position,
-  // Stored as a path; <Image> needs a file:// URI.
-  localUri: row.localPath ? `file://${row.localPath}` : null,
+  // Stored as paths; <Image> needs a file:// URI. Show the small upload
+  // copy once it exists (decoding an 18 MB original for a thumbnail is waste).
+  localUri:
+    row.compressedPath || row.localPath
+      ? `file://${row.compressedPath ?? row.localPath}`
+      : null,
+  originalPath: row.localPath,
+  uploadPath: row.compressedPath,
   sizeBytes: row.sizeBytes,
   width: row.width,
   height: row.height,

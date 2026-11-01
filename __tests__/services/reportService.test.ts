@@ -33,6 +33,12 @@ const fakeFiles = (failOnPosition?: number) => {
       stored.add(path);
       return path;
     },
+    keepUploadFile: async (tempPath, reportId, position) => {
+      stored.delete(tempPath);
+      const path = `/docs/reports/${reportId}/${position}-upload.jpg`;
+      stored.add(path);
+      return path;
+    },
     deleteReportFiles: async reportId => {
       [...stored]
         .filter(path => path.includes(`/${reportId}/`))
