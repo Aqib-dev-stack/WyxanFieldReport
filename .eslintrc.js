@@ -12,12 +12,12 @@ const ALIASES = [
   'app-types',
   'components',
   'config',
+  'db',
   'hooks',
   'mocks',
   'navigation',
   'screens',
   'services',
-  'storage',
   'utils',
 ];
 

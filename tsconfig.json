@@ -11,6 +11,8 @@
       "@components/*": ["./src/components/*"],
       "@config": ["./src/config"],
       "@config/*": ["./src/config/*"],
+      "@db": ["./src/db"],
+      "@db/*": ["./src/db/*"],
       "@hooks/*": ["./src/hooks/*"],
       "@mocks": ["./src/mocks"],
       "@mocks/*": ["./src/mocks/*"],
@@ -19,7 +21,6 @@
       "@screens": ["./src/screens"],
       "@screens/*": ["./src/screens/*"],
       "@services/*": ["./src/services/*"],
-      "@storage/*": ["./src/storage/*"],
       "@utils/*": ["./src/utils/*"]
     }
   },

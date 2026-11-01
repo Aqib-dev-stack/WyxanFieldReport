@@ -10,3 +10,6 @@ jest.mock(
 jest.mock('@react-native-community/netinfo', () =>
   require('@react-native-community/netinfo/jest/netinfo-mock.js'),
 );
+
+// op-sqlite is native; swap in a real in-memory SQLite (node:sqlite).
+jest.mock('@op-engineering/op-sqlite', () => require('./jest/opSqliteMock'));

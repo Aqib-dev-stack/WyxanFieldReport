@@ -16,6 +16,7 @@ export { default as Screen } from './common/Screen';
 export type { ScreenProps } from './common/Screen';
 export { ToastProvider, useToast } from './common/Toast';
 
+export { default as DatabaseGate } from './layout/DatabaseGate';
 export { default as AppHeader } from './layout/AppHeader';
 export type { AppHeaderProps } from './layout/AppHeader';
 export { default as NetworkIndicator } from './layout/NetworkIndicator';
