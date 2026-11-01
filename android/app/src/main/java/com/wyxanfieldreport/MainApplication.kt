@@ -1,6 +1,7 @@
 package com.wyxanfieldreport
 
 import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -22,6 +23,9 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    // The UI has a light palette only. Pinning light mode keeps the edge-to-edge system bar
+    // icons dark (readable) on the white header and tab bar when the device is in dark mode.
+    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     loadReactNative(this)
   }
 }

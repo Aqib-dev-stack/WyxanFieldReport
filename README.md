@@ -1,3 +1,41 @@
+# Wyxan Field Report
+
+A bare React Native CLI + TypeScript app for creating field reports (description plus 1–5 photos) that are queued on the device and uploaded reliably to the backend.
+
+## Project scripts
+
+| Command             | What it does                           |
+| ------------------- | -------------------------------------- |
+| `npm run android`   | Build and run on Android               |
+| `npm run ios`       | Build and run on iOS                   |
+| `npm start`         | Start Metro                            |
+| `npm test`          | Run Jest                               |
+| `npm run lint`      | ESLint (`lint:fix` applies fixes)      |
+| `npm run format`    | Prettier write (`format:check` checks) |
+| `npm run typecheck` | TypeScript, no emit                    |
+
+## Structure
+
+```
+src/
+  components/   shared UI (AppButton, EmptyState, Screen)          → @components
+  config/       colors, constants                                  → @config
+  navigation/   bottom tabs, route types                           → @navigation
+  screens/      CreateReport, UploadQueue, ServerReports           → @screens
+  hooks/ services/ storage/ utils/   reserved for upcoming features
+```
+
+Path aliases are declared in `tsconfig.json` (type checking) and `babel.config.js` (Metro and Jest). Keep the two lists in sync, along with `ALIASES` in `.eslintrc.js`.
+
+## Navigation
+
+```
+AppNavigator (bottom tabs)
+  CreateReport (initial) · UploadQueue · ServerReports
+```
+
+---
+
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
 # Getting Started

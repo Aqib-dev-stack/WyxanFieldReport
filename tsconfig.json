@@ -1,5 +1,24 @@
 {
   "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    // No "baseUrl" (deprecated in TypeScript 6): "paths" resolve relative to
+    // this file. Keep in sync with `module-resolver` in babel.config.js, which
+    // performs the runtime resolution for Metro and Jest.
+    "paths": {
+      "@components": ["./src/components"],
+      "@components/*": ["./src/components/*"],
+      "@config": ["./src/config"],
+      "@config/*": ["./src/config/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@navigation": ["./src/navigation"],
+      "@navigation/*": ["./src/navigation/*"],
+      "@screens": ["./src/screens"],
+      "@screens/*": ["./src/screens/*"],
+      "@services/*": ["./src/services/*"],
+      "@storage/*": ["./src/storage/*"],
+      "@utils/*": ["./src/utils/*"]
+    }
+  },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["**/node_modules", "**/Pods"]
+  "exclude": ["**/node_modules", "**/Pods", "android", "ios", "vendor"]
 }
