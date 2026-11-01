@@ -50,6 +50,14 @@ RootStack (native stack)
 Every screen uses the same `AppHeader`, with a live network indicator: a green
 Wifi icon when online, a dark WifiOff icon plus "Offline" when not.
 
+## Backend
+
+The API lives in [`backend/`](backend/README.md): Express + MongoDB, images on
+disk, idempotent by the phone's report UUID, with chaos modes (drop, lost
+response, 500, 413, hang, slow) for testing the upload engine. Set
+`MONGODB_URI` in `backend/.env` (local MongoDB or Atlas), then `npm start` in
+`backend/`.
+
 ## Local database
 
 SQLite via **op-sqlite** (JSI, bare React Native) with **Drizzle ORM**, laid out

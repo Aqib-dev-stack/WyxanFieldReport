@@ -1,0 +1,27 @@
+{
+  "name": "wyxan-field-report-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Small API the Wyxan Field Report app uploads to. Express + MongoDB, images on disk.",
+  "scripts": {
+    "start": "node src/server.ts",
+    "dev": "node --watch src/server.ts",
+    "test": "node --test 'test/**/*.test.ts'",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">= 22.18.0"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "mongoose": "^9.11.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.19.2",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
+    "typescript": "^6.0.3"
+  }
+}

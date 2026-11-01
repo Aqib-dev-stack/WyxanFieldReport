@@ -1,6 +1,8 @@
 module.exports = {
   preset: '@react-native/jest-preset',
   setupFiles: ['<rootDir>/jest.setup.js'],
+  // The backend is a separate package with its own tests (node --test).
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/backend/'],
   // lucide's "react-native" export is an .mjs file, which babel-jest does not
   // transform. Its CommonJS build is the same icons.
   moduleNameMapper: {
