@@ -65,8 +65,8 @@ const missingHint = (errors: ReportDraftErrors): string | null => {
  */
 const Compose = ({ navigation }: RootStackScreenProps<'Compose'>) => {
   const form = useComposeForm();
-  const picker = usePhotoPicker();
   const showToast = useToast();
+  const picker = usePhotoPicker({ onError: showToast });
   const { width } = useWindowDimensions();
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -193,11 +193,17 @@ const Compose = ({ navigation }: RootStackScreenProps<'Compose'>) => {
             The first one is the cover.
           </Text>
 
-          {picker.blockedSource ? (
+          {picker.problem ? (
             <PermissionNotice
-              source={picker.blockedSource}
+              source={picker.problem.source}
+              state={picker.problem.state}
+              onAskAgain={() => {
+                pickFrom(picker.problem?.source ?? 'camera').catch(
+                  () => undefined,
+                );
+              }}
               onOpenSettings={picker.openSettings}
-              onDismiss={picker.dismissBlocked}
+              onDismiss={picker.dismissProblem}
             />
           ) : null}
 
@@ -213,7 +219,14 @@ const Compose = ({ navigation }: RootStackScreenProps<'Compose'>) => {
 
       {/* Footer stays above the keyboard and the navigation bar. */}
       <View style={styles.footer}>
-        {hint ? <Text style={styles.footerHint}>{hint}</Text> : null}
+        {form.saveFailed ? (
+          <Text style={styles.saveError} accessibilityRole="alert">
+            Couldn't save the report. Your text and photos are still here; try
+            again.
+          </Text>
+        ) : hint ? (
+          <Text style={styles.footerHint}>{hint}</Text>
+        ) : null}
         <AppButton
           title="Save report"
           disabled={!form.isValid}
@@ -267,6 +280,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: COLORS.border,
+  },
+  saveError: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.danger,
+    textAlign: 'center',
   },
   footerHint: {
     ...TYPOGRAPHY.caption,

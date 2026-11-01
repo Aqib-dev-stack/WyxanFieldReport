@@ -36,7 +36,8 @@ const toReportImage = (row: ReportImageRow): ReportImage => ({
   id: row.id,
   reportId: row.reportId,
   position: row.position,
-  localUri: row.localPath,
+  // Stored as a path; <Image> needs a file:// URI.
+  localUri: row.localPath ? `file://${row.localPath}` : null,
   sizeBytes: row.sizeBytes,
   width: row.width,
   height: row.height,

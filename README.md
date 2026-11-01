@@ -103,6 +103,40 @@ inlined into the bundle at build time).
 | `expo-drizzle-studio-plugin`                            | `npm run db:pull` + `sqlite3` / DB Browser for SQLite                                              |
 | `babel-preset-expo` / `expo/metro-config`               | `@react-native/babel-preset` / `@react-native/metro-config` + `inline-import` and `sql` source ext |
 
+## Composing a report
+
+**Photos.** `react-native-image-picker` opens the system camera or gallery
+(multi-select up to the slots left; on Android 13+ the gallery is the system
+Photo Picker, which needs no storage permission). Originals are kept as they
+are; shrinking under 5 MB is a separate step.
+
+**Camera permission.** Declared in the manifest and requested with React
+Native's own `PermissionsAndroid` at the first "Take photo":
+
+- refused once → the notice offers **Allow camera** (asks again);
+- refused for good (`never_ask_again`) → the notice offers **Open Settings**;
+- back from Settings → the permission is checked again when the app returns to
+  the foreground, and the notice disappears if it was granted. No restart.
+
+The camera is marked `required="false"`, so the app installs on devices
+without one; the gallery still works.
+
+**Saving.** `reportService.createReport` (no React, unit tested):
+
+1. copies each photo into the app's private storage,
+   `<documents>/reports/<reportId>/<position>-original.jpg` (the picker's copy
+   lives in the cache, which Android may clear);
+2. writes the report and photo rows in one database transaction.
+
+Files first, so a saved row never points to a missing file. If anything fails,
+the copies are deleted and nothing is saved; the form keeps the user's input.
+The report id is a v4 UUID from a secure random source
+(`react-native-get-random-values`); it is also the server's idempotency key.
+
+The Outbox, Report detail and Start over read the local database. In
+development builds, Settings has **Add sample reports** to preview every upload
+status.
+
 ## Start over (reset)
 
 Settings → **Start over** is the one deliberate reset. Its reach:
@@ -118,9 +152,10 @@ inspector). The server is the shared record, so a phone can never delete it.
 The confirmation counts the reports that haven't reached the server and says
 they will be lost for good; the confirm button names that consequence.
 
-Order when wired to real storage (phase 8): stop the upload runner first, so
-nothing is mid-flight, then delete the database rows in one transaction, then
-delete the app's photo folder.
+Order: delete the database rows (one transaction), then the app's photo
+folder. If the app dies in between, the worst case is unused files, never a
+report whose photos are missing. Phase 8 adds stopping the upload runner first,
+so nothing is mid-flight.
 
 ### After changing Babel or Metro config
 

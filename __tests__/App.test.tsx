@@ -15,13 +15,19 @@ const texts = (renderer: Renderer) =>
     .findAll(node => typeof node.props.children === 'string')
     .map(node => node.props.children as string);
 
-/** Finds a pressable by its accessibility label, like a screen reader would. */
+/**
+ * Finds a pressable the way a screen reader names it: its accessibility
+ * label, or the visible title of a text button.
+ */
 const pressByLabel = async (renderer: Renderer, label: string) => {
-  const target = renderer.root.find(
+  const target = renderer.root.findAll(
     (node: ReactTestInstance) =>
-      node.props.accessibilityLabel === label &&
+      (node.props.accessibilityLabel === label || node.props.title === label) &&
       typeof node.props.onPress === 'function',
-  );
+  )[0];
+  if (!target) {
+    throw new Error(`No button named "${label}"`);
+  }
   await ReactTestRenderer.act(async () => target.props.onPress());
 };
 
@@ -51,8 +57,8 @@ describe('App', () => {
     });
     const app = renderer!;
 
-    // Outbox (home)
-    expect(texts(app)).toContain('Needs attention · 1');
+    // Outbox (home): a fresh install has no reports yet
+    expect(texts(app)).toContain('No reports yet');
 
     // Compose, then back
     await pressByLabel(app, 'New report');

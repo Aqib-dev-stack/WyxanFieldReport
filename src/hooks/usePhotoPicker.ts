@@ -1,37 +1,75 @@
-import { useCallback, useState } from 'react';
-import { Linking } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { AppState, Linking } from 'react-native';
 
-import { mockPickPhotos } from '@mocks';
+import { hasCameraPermission } from '@services/media/cameraPermission';
+import { pickPhotos } from '@services/media/photoPicker';
 
 import type { DraftPhoto, PhotoSource } from '@app-types';
 
+export type PermissionProblem = {
+  source: PhotoSource;
+  /** denied: may ask again. blocked: only Settings can fix it. */
+  state: 'denied' | 'blocked';
+};
+
 /**
- * Picking photos and the "permission blocked" state that comes with it.
+ * Picking photos plus the permission and error states that come with it.
  * Knows nothing about the form: it returns the photos and the caller adds
- * them. UI phase: uses the mock picker; phase 3 swaps in the real one.
+ * them.
+ *
+ * When the app comes back to the foreground (e.g. from Settings), the camera
+ * permission is checked again and the notice disappears if it was granted:
+ * no restart needed.
  */
-export const usePhotoPicker = () => {
-  const [blockedSource, setBlockedSource] = useState<PhotoSource | null>(null);
+export const usePhotoPicker = ({
+  onError,
+}: {
+  onError: (message: string) => void;
+}) => {
+  const [problem, setProblem] = useState<PermissionProblem | null>(null);
 
   const pick = useCallback(
     async (source: PhotoSource, limit: number): Promise<DraftPhoto[]> => {
-      const result = await mockPickPhotos(source, limit);
-      if (result.kind === 'blocked') {
-        setBlockedSource(result.source);
-        return [];
+      const result = await pickPhotos(source, limit);
+      switch (result.kind) {
+        case 'picked':
+          setProblem(null);
+          return result.photos;
+        case 'denied':
+        case 'blocked':
+          setProblem({ source: result.source, state: result.kind });
+          return [];
+        case 'error':
+          onError(result.message);
+          return [];
+        case 'cancelled':
+          return [];
       }
-      setBlockedSource(null);
-      return result.kind === 'picked' ? result.photos : [];
     },
-    [],
+    [onError],
   );
 
-  const dismissBlocked = useCallback(() => setBlockedSource(null), []);
+  useEffect(() => {
+    if (problem?.source !== 'camera') {
+      return;
+    }
+    const subscription = AppState.addEventListener('change', state => {
+      if (state !== 'active') {
+        return;
+      }
+      hasCameraPermission()
+        .then(granted => granted && setProblem(null))
+        .catch(() => undefined);
+    });
+    return () => subscription.remove();
+  }, [problem]);
 
-  /** Opens this app's page in system Settings (real, not mocked). */
+  const dismissProblem = useCallback(() => setProblem(null), []);
+
+  /** Opens this app's page in system Settings. */
   const openSettings = useCallback(() => {
     Linking.openSettings().catch(() => undefined);
   }, []);
 
-  return { pick, blockedSource, dismissBlocked, openSettings };
+  return { pick, problem, dismissProblem, openSettings };
 };

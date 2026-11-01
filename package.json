@@ -16,6 +16,7 @@
     "db:pull": "bash scripts/pull-db.sh"
   },
   "dependencies": {
+    "@dr.pogodin/react-native-fs": "^2.41.0",
     "@op-engineering/op-sqlite": "^19.0.3",
     "@react-native-community/netinfo": "^12.0.1",
     "@react-navigation/bottom-tabs": "^7.21.0",
@@ -25,6 +26,8 @@
     "lucide-react-native": "^1.66.0",
     "react": "19.3.0",
     "react-native": "0.88.1",
+    "react-native-get-random-values": "^2.1.0",
+    "react-native-image-picker": "^8.3.0",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.30.1",
     "react-native-svg": "^15.16.0"

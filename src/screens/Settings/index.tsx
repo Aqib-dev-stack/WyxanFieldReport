@@ -11,6 +11,7 @@ import {
   STATUS_APPEARANCE,
   TYPOGRAPHY,
 } from '@config';
+import { useDevSamples } from '@hooks/useDevSamples';
 import { useStartOver } from '@hooks/useStartOver';
 import { formatPhotoCount } from '@utils/formatters';
 
@@ -48,6 +49,7 @@ const ListItem = ({
 const Settings = ({ navigation }: RootStackScreenProps<'Settings'>) => {
   const { counts, isResetting, startOver } = useStartOver();
   const showToast = useToast();
+  const addSamples = useDevSamples();
   const [confirming, setConfirming] = useState(false);
 
   const onConfirm = useCallback(async () => {
@@ -128,6 +130,29 @@ const Settings = ({ navigation }: RootStackScreenProps<'Settings'>) => {
             ) : null}
           </View>
         </View>
+
+        {__DEV__ ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle} accessibilityRole="header">
+              Developer
+            </Text>
+            <View style={styles.card}>
+              <Text style={styles.body}>
+                Adds sample reports in every upload status to the local
+                database, to preview the Outbox. Development builds only.
+              </Text>
+              <AppButton
+                title="Add sample reports"
+                variant="secondary"
+                onPress={() => {
+                  addSamples()
+                    .then(() => showToast('Sample reports added.'))
+                    .catch(() => showToast("Couldn't add sample reports."));
+                }}
+              />
+            </View>
+          </View>
+        ) : null}
       </View>
 
       <ConfirmDialog

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { resetMockOutbox } from '@mocks';
+import { reportService } from '@services/reports';
 import { summarizeOutbox } from '@utils/reportStatus';
 
 import { useOutboxReports } from './useOutboxReports';
@@ -9,12 +9,9 @@ import { useOutboxReports } from './useOutboxReports';
  * "Start over": what it would delete, and doing it.
  *
  * Reach (documented in README): deletes everything this app stores on the
- * phone (all local reports in any status, the app's photo copies, upload
- * and retry state). Never touches the server or the phone's own gallery.
- *
- * UI phase: clears the mock store. Phase 8 does it for real, in this order:
- * stop the upload runner, delete DB rows in one transaction, delete the
- * app's photo folder.
+ * phone (all local reports in any status, the app's photo copies, upload and
+ * retry state). Never touches the server or the phone's own gallery. Phase 8
+ * adds stopping the upload runner first.
  */
 export const useStartOver = () => {
   const items = useOutboxReports();
@@ -33,8 +30,11 @@ export const useStartOver = () => {
 
   const startOver = useCallback(async () => {
     setIsResetting(true);
-    resetMockOutbox();
-    setIsResetting(false);
+    try {
+      await reportService.startOver();
+    } finally {
+      setIsResetting(false);
+    }
   }, []);
 
   return { counts, isResetting, startOver };

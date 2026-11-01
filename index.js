@@ -2,6 +2,8 @@
  * @format
  */
 
+// Must be first: gives Hermes a secure crypto.getRandomValues for report IDs.
+import 'react-native-get-random-values';
 import { AppRegistry } from 'react-native';
 
 import App from './App';

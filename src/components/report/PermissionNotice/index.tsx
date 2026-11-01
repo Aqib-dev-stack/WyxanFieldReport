@@ -9,34 +9,42 @@ import type { PhotoSource } from '@app-types';
 
 export type PermissionNoticeProps = {
   source: PhotoSource;
+  /** denied: the app may ask again. blocked: only Settings can grant it. */
+  state: 'denied' | 'blocked';
+  onAskAgain: () => void;
   onOpenSettings: () => void;
   onDismiss: () => void;
 };
 
-const COPY: Record<PhotoSource, { title: string; message: string }> = {
-  camera: {
-    title: 'Camera access is off',
-    message:
-      'To take photos here, allow Camera for this app in Settings. You can still choose photos from the gallery.',
-  },
-  gallery: {
-    title: 'Photo access is off',
-    message:
-      'To choose photos, allow Photos for this app in Settings. You can still take photos with the camera.',
-  },
+const NAME: Record<PhotoSource, string> = {
+  camera: 'Camera',
+  gallery: 'Photos',
+};
+
+const ALTERNATIVE: Record<PhotoSource, string> = {
+  camera: 'You can still choose photos from the gallery.',
+  gallery: 'You can still take photos with the camera.',
 };
 
 /**
- * Shown when the OS has blocked a permission and won't ask again. Says what
- * is wrong, how to fix it, and the way around it. When the user comes back
- * from Settings the permission is checked again (phase 3), no restart needed.
+ * Shown when a photo permission is refused. Says what is wrong, how to fix
+ * it, and the way around it. "Denied" offers to ask again; "blocked" (the
+ * OS won't ask any more) sends the user to Settings. Coming back from
+ * Settings re-checks the permission, so no restart is needed.
  */
 const PermissionNotice = ({
   source,
+  state,
+  onAskAgain,
   onOpenSettings,
   onDismiss,
 }: PermissionNoticeProps) => {
-  const { title, message } = COPY[source];
+  const name = NAME[source];
+  const title = `${name} access is off`;
+  const message =
+    state === 'blocked'
+      ? `To use it here, allow ${name} for this app in Settings. ${ALTERNATIVE[source]}`
+      : `The app needs ${name} access for this. ${ALTERNATIVE[source]}`;
 
   return (
     <View style={styles.card} accessibilityRole="alert">
@@ -46,11 +54,19 @@ const PermissionNotice = ({
       </View>
       <Text style={styles.message}>{message}</Text>
       <View style={styles.actions}>
-        <AppButton
-          title="Open Settings"
-          onPress={onOpenSettings}
-          style={styles.action}
-        />
+        {state === 'blocked' ? (
+          <AppButton
+            title="Open Settings"
+            onPress={onOpenSettings}
+            style={styles.action}
+          />
+        ) : (
+          <AppButton
+            title={`Allow ${name.toLowerCase()}`}
+            onPress={onAskAgain}
+            style={styles.action}
+          />
+        )}
         <AppButton
           title="Not now"
           variant="secondary"

@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { initDatabase } from '@db';
+import { initializeLocalData } from '@services/reports';
 
 export type DatabaseStatus = 'opening' | 'ready' | 'failed';
 
 /**
- * Opens the database and applies migrations once at startup. `retry` runs
- * it again after a failure (migrations are transactional, so a failed one
- * left nothing half-applied).
+ * Opens the database, applies migrations and loads the local reports once at
+ * startup. `retry` runs it again after a failure (migrations are
+ * transactional, so a failed one left nothing half-applied).
  */
 export const useDatabaseReady = () => {
   const [status, setStatus] = useState<DatabaseStatus>('opening');
@@ -16,7 +16,7 @@ export const useDatabaseReady = () => {
   useEffect(() => {
     let active = true;
     setStatus('opening');
-    initDatabase()
+    initializeLocalData()
       .then(() => active && setStatus('ready'))
       .catch(() => active && setStatus('failed'));
     return () => {

@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Requested at "Take photo"; denying it only disables the camera path. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Camera is optional: the app still installs on devices without one (gallery works). -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
       android:name=".MainApplication"

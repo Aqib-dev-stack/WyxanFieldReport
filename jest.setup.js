@@ -13,3 +13,10 @@ jest.mock('@react-native-community/netinfo', () =>
 
 // op-sqlite is native; swap in a real in-memory SQLite (node:sqlite).
 jest.mock('@op-engineering/op-sqlite', () => require('./jest/opSqliteMock'));
+
+// Native file system and image picker: in-memory / no-op stand-ins.
+jest.mock('@dr.pogodin/react-native-fs', () => require('./jest/fsMock'));
+jest.mock('react-native-image-picker', () => ({
+  launchCamera: jest.fn(async () => ({ didCancel: true })),
+  launchImageLibrary: jest.fn(async () => ({ didCancel: true })),
+}));

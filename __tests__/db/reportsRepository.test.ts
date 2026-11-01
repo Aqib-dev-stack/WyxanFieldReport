@@ -30,7 +30,7 @@ const input = (id: string, photos = 2): NewReportInput => ({
     id: `${id}-img-${position}`,
     position,
     originalUri: `content://photo/${position}`,
-    localPath: `file:///app/photos/${id}-${position}.jpg`,
+    localPath: `/app/photos/${id}-${position}.jpg`,
   })),
 });
 

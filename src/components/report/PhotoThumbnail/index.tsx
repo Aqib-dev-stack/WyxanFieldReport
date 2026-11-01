@@ -16,7 +16,13 @@ const PhotoThumbnail = ({ uri, size = 64 }: PhotoThumbnailProps) => (
     importantForAccessibility="no-hide-descendants"
   >
     {uri ? (
-      <Image source={{ uri }} style={styles.image} resizeMode="cover" />
+      <Image
+        source={{ uri }}
+        style={styles.image}
+        resizeMode="cover"
+        // Decode a small bitmap, not the full 4000x3000 original (memory, jank).
+        resizeMethod="resize"
+      />
     ) : (
       <ImageIcon size={SIZES.iconMd} color={COLORS.textDisabled} />
     )}
