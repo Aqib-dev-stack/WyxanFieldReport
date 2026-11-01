@@ -19,13 +19,17 @@ A bare React Native CLI + TypeScript app for creating field reports (description
 ```
 src/
   components/
-    common/     AppButton, EmptyState, IconButton, Screen            → @components
-    layout/     AppHeader, NetworkIndicator
+    common/     AppButton, EmptyState, Fab, IconButton, ProgressBar, Screen → @components
+    layout/     AppHeader, NetworkIndicator, OfflineBanner
+    report/     ReportCard, StatusBadge, SummaryStrip, PhotoThumbnail
   config/       colors, theme tokens (spacing, radius, sizes, type), constants → @config
-  hooks/        useNetworkStatus (live NetInfo)                      → @hooks/*
+  hooks/        useNetworkStatus (live NetInfo), useOutboxReports  → @hooks/*
+  mocks/        UI-phase mock data, removed in phase 8               → @mocks
+  types/        Report, ReportStatus, OutboxItem                     → @app-types
   navigation/   root stack, main tabs, header adapters, route types  → @navigation
   screens/      Outbox, ServerReports, Compose, ReportDetail, Settings → @screens
-  services/ storage/ utils/   reserved for upcoming features
+  utils/        formatters, report status text / summary / grouping   → @utils/*
+  services/ storage/   reserved for upcoming features
 ```
 
 Path aliases are declared in `tsconfig.json` (type checking) and `babel.config.js` (Metro and Jest). Keep the two lists in sync, along with `ALIASES` in `.eslintrc.js`.
@@ -44,6 +48,36 @@ RootStack (native stack)
 
 Every screen uses the same `AppHeader`, with a live network indicator: a green
 Wifi icon when online, a dark WifiOff icon plus "Offline" when not.
+
+## Start over (reset)
+
+Settings → **Start over** is the one deliberate reset. Its reach:
+
+| Deletes from this phone                                                | Keeps                                                           |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Every local report, in any status, **including ones not uploaded yet** | Reports already on the server (they still show under On server) |
+| The app's own copies of the photos                                     | Original photos in the phone's gallery                          |
+| Upload progress and retry history                                      | App permissions and settings                                    |
+
+Why this line: "start over" is about this phone (e.g. handing it to another
+inspector). The server is the shared record, so a phone can never delete it.
+The confirmation counts the reports that haven't reached the server and says
+they will be lost for good; the confirm button names that consequence.
+
+Order when wired to real storage (phase 8): stop the upload runner first, so
+nothing is mid-flight, then delete the database rows in one transaction, then
+delete the app's photo folder.
+
+### After changing Babel or Metro config
+
+Metro caches transformed files and does not notice changes to
+`babel.config.js` or `metro.config.js` (e.g. a new path alias). After such a
+change, restart it with a clean cache, or imports like `@mocks` fail to
+resolve:
+
+```sh
+npx react-native start --reset-cache
+```
 
 ### Android 17 note (debug builds)
 

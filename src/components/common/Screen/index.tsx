@@ -17,6 +17,11 @@ export type ScreenProps = {
   /** Scrolls the content; use for forms and anything taller than a small phone. */
   scroll?: boolean;
   /**
+   * Pads the content (default). Turn off for full-width content such as
+   * lists and banners, which pad themselves.
+   */
+  padded?: boolean;
+  /**
    * Safe-area edges this screen pads itself. The navigator's header covers the
    * top and the tab bar covers the bottom, so by default only the sides.
    */
@@ -32,6 +37,7 @@ const DEFAULT_EDGES: Edge[] = ['left', 'right'];
 const Screen = ({
   children,
   scroll = false,
+  padded = true,
   edges = DEFAULT_EDGES,
 }: ScreenProps) => (
   <SafeAreaView style={styles.root} edges={edges}>
@@ -41,13 +47,18 @@ const Screen = ({
     >
       {scroll ? (
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            padded && styles.padding,
+          ]}
           keyboardShouldPersistTaps="handled"
         >
           {children}
         </ScrollView>
       ) : (
-        <View style={styles.content}>{children}</View>
+        <View style={[styles.content, padded && styles.padding]}>
+          {children}
+        </View>
       )}
     </KeyboardAvoidingView>
   </SafeAreaView>
@@ -55,8 +66,9 @@ const Screen = ({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.background },
-  content: { flex: 1, padding: SPACING.lg },
-  scrollContent: { flexGrow: 1, padding: SPACING.lg },
+  content: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
+  padding: { padding: SPACING.lg },
 });
 
 export default Screen;

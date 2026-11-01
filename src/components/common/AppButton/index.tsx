@@ -2,6 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
 import { COLORS, RADIUS, SIZES, SPACING } from '@config';
 
+import type { ReactNode } from 'react';
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 
 type Variant = 'primary' | 'secondary' | 'danger';
@@ -10,6 +11,8 @@ export type AppButtonProps = Omit<PressableProps, 'children' | 'style'> & {
   title: string;
   variant?: Variant;
   loading?: boolean;
+  /** Optional icon before the title; colour it to match the variant. */
+  icon?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -23,6 +26,7 @@ const AppButton = ({
   title,
   variant = 'primary',
   loading = false,
+  icon,
   disabled,
   style,
   ...rest
@@ -49,7 +53,10 @@ const AppButton = ({
       {loading ? (
         <ActivityIndicator color={textColor} />
       ) : (
-        <Text style={[styles.title, { color: textColor }]}>{title}</Text>
+        <>
+          {icon}
+          <Text style={[styles.title, { color: textColor }]}>{title}</Text>
+        </>
       )}
     </Pressable>
   );
@@ -60,6 +67,8 @@ const styles = StyleSheet.create({
     minHeight: SIZES.hitTarget,
     paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.md,
+    flexDirection: 'row',
+    gap: SPACING.sm,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',

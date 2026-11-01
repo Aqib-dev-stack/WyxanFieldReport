@@ -9,9 +9,11 @@
 
 /** Path aliases — keep in sync with tsconfig.json and babel.config.js. */
 const ALIASES = [
+  'app-types',
   'components',
   'config',
   'hooks',
+  'mocks',
   'navigation',
   'screens',
   'services',

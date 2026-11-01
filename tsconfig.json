@@ -5,11 +5,15 @@
     // this file. Keep in sync with `module-resolver` in babel.config.js, which
     // performs the runtime resolution for Metro and Jest.
     "paths": {
+      "@app-types": ["./src/types"],
+      "@app-types/*": ["./src/types/*"],
       "@components": ["./src/components"],
       "@components/*": ["./src/components/*"],
       "@config": ["./src/config"],
       "@config/*": ["./src/config/*"],
       "@hooks/*": ["./src/hooks/*"],
+      "@mocks": ["./src/mocks"],
+      "@mocks/*": ["./src/mocks/*"],
       "@navigation": ["./src/navigation"],
       "@navigation/*": ["./src/navigation/*"],
       "@screens": ["./src/screens"],

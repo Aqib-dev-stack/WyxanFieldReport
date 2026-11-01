@@ -5,14 +5,17 @@ import { COLORS, SPACING, TYPOGRAPHY } from '@config';
 import type { ReactNode } from 'react';
 
 export type EmptyStateProps = {
+  /** Optional illustration above the title, e.g. a large icon. */
+  icon?: ReactNode;
   title: string;
   message?: string;
   /** Optional call to action below the message. */
   action?: ReactNode;
 };
 
-const EmptyState = ({ title, message, action }: EmptyStateProps) => (
+const EmptyState = ({ icon, title, message, action }: EmptyStateProps) => (
   <View style={styles.container}>
+    {icon ? <View style={styles.icon}>{icon}</View> : null}
     <Text style={styles.title}>{title}</Text>
     {message ? <Text style={styles.message}>{message}</Text> : null}
     {action ? <View style={styles.action}>{action}</View> : null}
@@ -26,6 +29,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: SPACING.xl,
   },
+  icon: { marginBottom: SPACING.lg },
   title: {
     ...TYPOGRAPHY.headline,
     color: COLORS.textPrimary,

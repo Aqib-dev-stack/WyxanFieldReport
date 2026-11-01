@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ToastProvider } from '@components';
 import { RootNavigator } from '@navigation';
 
 /**
@@ -12,9 +13,11 @@ import { RootNavigator } from '@navigation';
 const App = () => (
   <SafeAreaProvider>
     <StatusBar barStyle="dark-content" />
-    <NavigationContainer>
-      <RootNavigator />
-    </NavigationContainer>
+    <ToastProvider>
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+    </ToastProvider>
   </SafeAreaProvider>
 );
 

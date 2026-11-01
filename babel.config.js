@@ -17,9 +17,12 @@ module.exports = {
           '.json',
         ],
         alias: {
+          // Not `@types`: that is npm's scope for type packages.
+          '@app-types': './src/types',
           '@components': './src/components',
           '@config': './src/config',
           '@hooks': './src/hooks',
+          '@mocks': './src/mocks',
           '@navigation': './src/navigation',
           '@screens': './src/screens',
           '@services': './src/services',
