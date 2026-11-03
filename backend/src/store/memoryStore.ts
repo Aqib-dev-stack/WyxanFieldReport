@@ -15,8 +15,10 @@ export const createMemoryStore = (): ReportStore => {
       return { report, created: true };
     },
     list: async () =>
-      [...reports.values()].sort((a, b) =>
-        b.receivedAt.localeCompare(a.receivedAt),
+      [...reports.values()].sort(
+        (a, b) =>
+          b.createdAt.localeCompare(a.createdAt) ||
+          b.receivedAt.localeCompare(a.receivedAt),
       ),
     deleteAll: async () => reports.clear(),
   };

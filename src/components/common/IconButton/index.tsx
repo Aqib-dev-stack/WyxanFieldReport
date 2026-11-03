@@ -10,13 +10,19 @@ export type IconButtonProps = Omit<PressableProps, 'children' | 'style'> & {
   icon: ReactNode;
   /** Required: an icon-only button has no visible text for screen readers. */
   accessibilityLabel: string;
+  /** Pressed feedback; pass a light one on dark surfaces. */
+  rippleColor?: string;
 };
 
 /** Icon-only button with a full 48dp touch target, whatever the icon size. */
-const IconButton = ({ icon, ...rest }: IconButtonProps) => (
+const IconButton = ({
+  icon,
+  rippleColor = COLORS.ripple,
+  ...rest
+}: IconButtonProps) => (
   <Pressable
     accessibilityRole="button"
-    android_ripple={{ color: COLORS.ripple, borderless: true }}
+    android_ripple={{ color: rippleColor, borderless: true }}
     style={({ pressed }) => [styles.base, pressed && styles.pressed]}
     {...rest}
   >
@@ -32,7 +38,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pressed: { opacity: 0.6 },
+  pressed: { opacity: 0.7 },
 });
 
 export default IconButton;

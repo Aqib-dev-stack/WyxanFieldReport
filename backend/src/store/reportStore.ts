@@ -14,7 +14,11 @@ export type ReportStore = {
   insertIfAbsent: (
     report: StoredReport,
   ) => Promise<{ report: StoredReport; created: boolean }>;
-  /** Newest received first. */
+  /**
+   * Newest first by when the inspector made it on the phone (then by when
+   * it arrived). Not by arrival alone: a report that needed many retries
+   * would otherwise jump above newer ones.
+   */
   list: () => Promise<StoredReport[]>;
   deleteAll: () => Promise<void>;
 };

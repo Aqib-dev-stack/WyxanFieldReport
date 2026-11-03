@@ -1,0 +1,7 @@
+<resources>
+    <!-- WYXAN brand red, rgb(195, 39, 46) from wyxan.com. -->
+    <color name="brand_red">#C3272E</color>
+    <!-- Near-black ink of wyxan.com; splash and header background. -->
+    <color name="brand_ink">#0E0F12</color>
+    <color name="ic_launcher_background">#C3272E</color>
+</resources>

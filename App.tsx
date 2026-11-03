@@ -1,9 +1,16 @@
-import { NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { DatabaseGate, ToastProvider } from '@components';
+import { COLORS } from '@config';
 import { RootNavigator } from '@navigation';
+
+/** The background around the floating tab bar matches the screens'. */
+const THEME = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: COLORS.background },
+};
 
 /**
  * Root providers only. Android draws edge to edge (`edgeToEdgeEnabled`), so
@@ -13,10 +20,11 @@ import { RootNavigator } from '@navigation';
  */
 const App = () => (
   <SafeAreaProvider>
-    <StatusBar barStyle="dark-content" />
+    {/* Light icons: the header and the splash are dark (WYXAN ink). */}
+    <StatusBar barStyle="light-content" />
     <ToastProvider>
       <DatabaseGate>
-        <NavigationContainer>
+        <NavigationContainer theme={THEME}>
           <RootNavigator />
         </NavigationContainer>
       </DatabaseGate>

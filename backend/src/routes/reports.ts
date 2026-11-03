@@ -180,7 +180,7 @@ export const reportsRouter = ({
     },
   );
 
-  /** GET /reports — complete reports only, newest received first. */
+  /** GET /reports — complete reports only, newest made first. */
   router.get('/', async (req, res) => {
     const reports = await store.list();
     const root = baseUrl(req);

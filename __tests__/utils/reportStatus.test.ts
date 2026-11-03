@@ -72,7 +72,7 @@ describe('summarizeOutbox', () => {
 });
 
 describe('groupOutbox', () => {
-  it('puts failed first, active before waiting, waiting oldest first', () => {
+  it('puts failed first, the active one before waiting, newest first within a group', () => {
     const sections = groupOutbox([
       item('waiting-new', 'queued', '2026-11-01T10:30:00.000Z'),
       item('done', 'uploaded', '2026-11-01T08:00:00.000Z'),
@@ -83,7 +83,7 @@ describe('groupOutbox', () => {
 
     expect(sections.map(s => [s.key, s.data.map(i => i.report.id)])).toEqual([
       ['attention', ['broken']],
-      ['queue', ['sending', 'waiting-old', 'waiting-new']],
+      ['queue', ['sending', 'waiting-new', 'waiting-old']],
       ['uploaded', ['done']],
     ]);
   });

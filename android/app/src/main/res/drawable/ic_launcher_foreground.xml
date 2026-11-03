@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive icon foreground: the WYXAN X (a 4-point star) in white, in the
+  middle 44dp of the 108dp canvas, well inside the 66dp safe zone that every
+  launcher mask keeps.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,32 L54,50.13 L76,32 L57.87,54 L76,76 L54,57.87 L32,76 L50.13,54 Z" />
+</vector>

@@ -394,6 +394,39 @@ describe('uploadEngine', () => {
     expect((await repository.getById('n'))?.status).toBe('uploaded');
   });
 
+  it('a report that keeps failing does not starve a newer one', async () => {
+    const { engine, server, repository, saveReady, advanceToNextRetry } =
+      await setup();
+    await saveReady('old', 1);
+    // The old report gets 500 on every commit; the new one would succeed.
+    const realCommit = server.api.commitReport;
+    server.api.commitReport = async (input, signal) =>
+      input.id === 'old'
+        ? { ok: false, error: { kind: 'server', status: 500 } }
+        : realCommit(input, signal);
+
+    await engine.run(); // old fails, retry scheduled
+    await saveReady('new', 1, 1);
+    await advanceToNextRetry(); // new has waited longer than old now: it goes first
+
+    expect((await repository.getById('new'))?.status).toBe('uploaded');
+  });
+
+  it('when the network is down, other waiting reports say "waiting for network" too', async () => {
+    const { engine, server, repository, saveReady } = await setup();
+    await saveReady('p', 1);
+    await saveReady('q', 1, 1);
+    server.script.upload = [{ kind: 'offline' }];
+
+    await engine.run();
+
+    expect((await repository.getById('p'))?.status).toBe('waitingNet');
+    expect(await repository.getById('q')).toMatchObject({
+      status: 'waitingNet',
+      attemptCount: 0, // q was never tried; it just waits for the same network
+    });
+  });
+
   it('pause aborts the upload in flight and leaves the report to resume', async () => {
     const { engine, server, repository, saveReady } = await setup();
     await saveReady('k', 2);

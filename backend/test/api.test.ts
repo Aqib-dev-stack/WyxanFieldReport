@@ -140,6 +140,32 @@ describe('commit', () => {
     assert.equal((await commit(id, 6)).body.error, 'invalidImageCount');
   });
 
+  it('lists newest made first, even when an older one arrived later', async () => {
+    const older = randomUUID();
+    const newer = randomUUID();
+    for (const id of [older, newer]) {
+      await put(id, 0);
+    }
+    // The newer report reaches the server first; the older one only after
+    // retries. The list still goes by when they were made on the phone.
+    await request(app).post(`/reports/${newer}/commit`).send({
+      description: 'Newer',
+      imageCount: 1,
+      createdAt: '2026-11-03T11:25:00.000Z',
+    });
+    await request(app).post(`/reports/${older}/commit`).send({
+      description: 'Older',
+      imageCount: 1,
+      createdAt: '2026-11-03T11:16:00.000Z',
+    });
+
+    const list = await request(app).get('/reports');
+    assert.deepEqual(
+      list.body.reports.map((r: { description: string }) => r.description),
+      ['Newer', 'Older'],
+    );
+  });
+
   it('lists only complete reports', async () => {
     await put(randomUUID(), 0); // uploaded, never committed
     assert.deepEqual((await request(app).get('/reports')).body.reports, []);

@@ -7,7 +7,7 @@
  * (over a USB cable with `adb reverse` it would not). Plain HTTP is allowed by
  * android/app/src/main/res/xml/network_security_config.xml.
  */
-export const API_BASE_URL = 'http://192.168.100.159:4000';
+export const API_BASE_URL = 'http://192.168.100.158:4000';
 
 export const API_TIMEOUTS = {
   /** Small JSON requests (commit, list). */

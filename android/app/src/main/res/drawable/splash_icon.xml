@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ splash icon (shown on a 240dp canvas, cropped to a 160dp
+  circle): the WYXAN mark, a red square with the X cut out (ink colour, the
+  splash background), 96dp wide. The in-app animated splash starts from
+  exactly this position and size, so the hand-over is seamless.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+    <path android:fillColor="@color/brand_red" android:pathData="M72,72 H168 V168 H72 Z" />
+    <path
+        android:fillColor="@color/brand_ink"
+        android:pathData="M72,72 L120,111.55 L168,72 L128.45,120 L168,168 L120,128.45 L72,168 L111.55,120 Z" />
+</vector>

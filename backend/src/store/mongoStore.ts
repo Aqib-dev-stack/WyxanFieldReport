@@ -25,7 +25,8 @@ const reportSchema = new mongoose.Schema(
   },
   { versionKey: false },
 );
-reportSchema.index({ receivedAt: -1 });
+// GET /reports lists newest made first.
+reportSchema.index({ createdAt: -1, receivedAt: -1 });
 
 const ReportModel = mongoose.model('Report', reportSchema);
 
@@ -77,7 +78,7 @@ export const createMongoStore = (): ReportStore => ({
 
   async list() {
     const docs = await ReportModel.find()
-      .sort({ receivedAt: -1 })
+      .sort({ createdAt: -1, receivedAt: -1 })
       .lean<ReportDoc[]>();
     return docs.map(toReport);
   },

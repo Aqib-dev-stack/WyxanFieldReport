@@ -26,6 +26,12 @@ export type ScreenProps = {
    * top and the tab bar covers the bottom, so by default only the sides.
    */
   edges?: Edge[];
+  /**
+   * Shift the content up when the keyboard opens (default). Turn off for a
+   * screen with a fixed footer: Android's own adjustResize already handles
+   * the keyboard, and doing both makes the footer jump.
+   */
+  avoidKeyboard?: boolean;
 };
 
 const DEFAULT_EDGES: Edge[] = ['left', 'right'];
@@ -39,10 +45,12 @@ const Screen = ({
   scroll = false,
   padded = true,
   edges = DEFAULT_EDGES,
+  avoidKeyboard = true,
 }: ScreenProps) => (
   <SafeAreaView style={styles.root} edges={edges}>
     <KeyboardAvoidingView
       style={styles.root}
+      enabled={avoidKeyboard}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       {scroll ? (

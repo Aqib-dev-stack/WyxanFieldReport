@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The WYXAN mark at 96dp, for the pre-Android-12 launch background. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path android:fillColor="@color/brand_red" android:pathData="M0,0 H96 V96 H0 Z" />
+    <path
+        android:fillColor="@color/brand_ink"
+        android:pathData="M0,0 L48,39.55 L96,0 L56.45,48 L96,96 L48,56.45 L0,96 L39.55,48 Z" />
+</vector>

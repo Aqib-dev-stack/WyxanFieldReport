@@ -145,15 +145,35 @@ export const createUploadEngine = ({
       return 'next';
     }
     const attemptCount = report.attemptCount + 1;
+    const nextAttemptAt = new Date(
+      now() + backoffDelay(attemptCount, random),
+    ).toISOString();
     await repository.update(report.id, {
       status: decision.waitingForNetwork ? 'waitingNet' : 'queued',
       failureKind: 'retryable',
       lastError: decision.message,
       attemptCount,
-      nextAttemptAt: new Date(
-        now() + backoffDelay(attemptCount, random),
-      ).toISOString(),
+      nextAttemptAt,
     });
+    if (decision.waitingForNetwork) {
+      // The network is down for every report, not just this one: say so on
+      // the ones still marked "waiting to upload" too (it never lies), and
+      // let them try again together with this one.
+      for (const other of await repository.list()) {
+        if (
+          other.id !== report.id &&
+          other.status === 'queued' &&
+          isUploadable(other) &&
+          dueTime(other) <= now()
+        ) {
+          await repository.update(other.id, {
+            status: 'waitingNet',
+            lastError: decision.message,
+            nextAttemptAt,
+          });
+        }
+      }
+    }
     await onChange();
     // The link or the server is the problem, not this report: don't hammer
     // the next one too. Stop, and wake up when the backoff is over.
@@ -295,8 +315,14 @@ export const createUploadEngine = ({
       const next = reports
         .filter(isUploadable)
         .filter(report => dueTime(report) <= nowMs)
-        // Oldest first: reports reach the server in the order they were made.
-        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+        // Whoever has waited longest goes first: earliest due time, then
+        // oldest. A report that just failed is due later, so it can't keep
+        // jumping ahead of newer ones (no starvation); without failures this
+        // is simply oldest first.
+        .sort(
+          (a, b) =>
+            dueTime(a) - dueTime(b) || a.createdAt.localeCompare(b.createdAt),
+        )[0];
       if (!next) {
         scheduleWake(reports);
         return;

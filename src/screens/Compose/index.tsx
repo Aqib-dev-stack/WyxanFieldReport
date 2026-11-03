@@ -139,7 +139,12 @@ const Compose = ({ navigation }: RootStackScreenProps<'Compose'>) => {
   const hint = missingHint(form.errors);
 
   return (
-    <Screen padded={false} edges={['left', 'right', 'bottom']}>
+    <Screen
+      padded={false}
+      edges={['left', 'right', 'bottom']}
+      // Fixed footer: the Save button stays at the bottom, it never jumps.
+      avoidKeyboard={false}
+    >
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"

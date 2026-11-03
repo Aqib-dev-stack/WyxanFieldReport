@@ -1,8 +1,22 @@
-import { Check, RotateCcw, TriangleAlert, X } from 'lucide-react-native';
+import {
+  Check,
+  CloudOff,
+  FileText,
+  Images,
+  RotateCcw,
+  TriangleAlert,
+  X,
+} from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { AppButton, ConfirmDialog, Screen, useToast } from '@components';
+import {
+  AppButton,
+  BrandMark,
+  ConfirmDialog,
+  Screen,
+  useToast,
+} from '@components';
 import {
   COLORS,
   RADIUS,
@@ -11,14 +25,44 @@ import {
   STATUS_APPEARANCE,
   TYPOGRAPHY,
 } from '@config';
-import { API_BASE_URL } from '@config/api';
 import { useStartOver } from '@hooks/useStartOver';
-import { formatPhotoCount } from '@utils/formatters';
+
+import { version } from '../../../package.json';
 
 import type { RootStackScreenProps } from '@navigation/types';
+import type { LucideIcon } from 'lucide-react-native';
 
 const plural = (count: number, word: string) =>
   `${count} ${word}${count === 1 ? '' : 's'}`;
+
+/** One number about this phone, with its own icon (never colour alone). */
+const StatTile = ({
+  icon: Icon,
+  value,
+  label,
+  tone = 'neutral',
+}: {
+  icon: LucideIcon;
+  value: number;
+  label: string;
+  tone?: 'neutral' | 'attention';
+}) => {
+  const color =
+    tone === 'attention'
+      ? STATUS_APPEARANCE.waitingNet.color
+      : COLORS.textPrimary;
+  return (
+    <View
+      style={styles.tile}
+      accessible
+      accessibilityLabel={`${value} ${label}`}
+    >
+      <Icon size={SIZES.iconMd} color={color} />
+      <Text style={[styles.tileValue, { color }]}>{value}</Text>
+      <Text style={styles.tileLabel}>{label}</Text>
+    </View>
+  );
+};
 
 const ListItem = ({
   kind,
@@ -28,23 +72,36 @@ const ListItem = ({
   text: string;
 }) => (
   <View style={styles.listItem}>
-    {kind === 'deletes' ? (
-      <X size={SIZES.iconSm + 2} color={COLORS.danger} strokeWidth={2.5} />
-    ) : (
-      <Check
-        size={SIZES.iconSm + 2}
-        color={STATUS_APPEARANCE.uploaded.color}
-        strokeWidth={2.5}
-      />
-    )}
+    <View
+      style={[
+        styles.listIcon,
+        {
+          backgroundColor:
+            kind === 'deletes'
+              ? STATUS_APPEARANCE.failed.tint
+              : STATUS_APPEARANCE.uploaded.tint,
+        },
+      ]}
+    >
+      {kind === 'deletes' ? (
+        <X size={SIZES.iconSm - 2} color={COLORS.danger} strokeWidth={3} />
+      ) : (
+        <Check
+          size={SIZES.iconSm - 2}
+          color={STATUS_APPEARANCE.uploaded.color}
+          strokeWidth={3}
+        />
+      )}
+    </View>
     <Text style={styles.listText}>{text}</Text>
   </View>
 );
 
 /**
- * Settings holds one deliberate action: Start over. The screen states
- * exactly what it deletes and what it leaves alone before the user commits,
- * and the confirmation names the reports that would be lost.
+ * Settings: what is on this phone, the one deliberate action (Start over,
+ * stating exactly what it deletes and what it leaves alone before the user
+ * commits; the confirmation names the reports that would be lost), and
+ * about the app.
  */
 const Settings = ({ navigation }: RootStackScreenProps<'Settings'>) => {
   const { counts, isResetting, startOver } = useStartOver();
@@ -68,48 +125,41 @@ const Settings = ({ navigation }: RootStackScreenProps<'Settings'>) => {
       <View style={styles.content}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle} accessibilityRole="header">
-            On this phone
+            ON THIS PHONE
           </Text>
-          <View style={styles.card}>
-            <Text style={styles.body}>
-              {counts.total === 0
-                ? 'No reports are stored on this phone.'
-                : `${plural(counts.total, 'report')} (${formatPhotoCount(
-                    counts.photos,
-                  )}). ${
-                    hasUnsent
-                      ? `${counts.unsent} of them ${
-                          counts.unsent === 1 ? "hasn't" : "haven't"
-                        } reached the server yet.`
-                      : 'All of them are on the server.'
-                  }`}
-            </Text>
+          <View style={styles.tiles}>
+            <StatTile icon={FileText} value={counts.total} label="Reports" />
+            <StatTile
+              icon={CloudOff}
+              value={counts.unsent}
+              label="Not uploaded yet"
+              tone={hasUnsent ? 'attention' : 'neutral'}
+            />
+            <StatTile icon={Images} value={counts.photos} label="Photos" />
           </View>
+          <Text style={styles.hint}>
+            {counts.total === 0
+              ? 'No reports are stored on this phone.'
+              : hasUnsent
+              ? 'Reports not uploaded yet are safe here and will upload on their own.'
+              : 'Everything on this phone has reached the server.'}
+          </Text>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle} accessibilityRole="header">
-            Upload server
+            START OVER
           </Text>
           <View style={styles.card}>
-            <Text style={styles.body} selectable>
-              {API_BASE_URL}
-            </Text>
-            <Text style={styles.caption}>
-              The computer running the backend, on the same Wi-Fi as this phone
-              (set in src/config/api.ts).
-            </Text>
-          </View>
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle} accessibilityRole="header">
-            Start over
-          </Text>
-          <View style={styles.card}>
-            <Text style={styles.body}>
-              Clears this phone so you can begin fresh, for example when handing
-              it to another inspector.
-            </Text>
+            <View style={styles.cardHeader}>
+              <View style={styles.cardIcon}>
+                <RotateCcw size={SIZES.iconMd} color={COLORS.danger} />
+              </View>
+              <Text style={styles.cardIntro}>
+                Clears this phone so you can begin fresh, for example when
+                handing it to another inspector.
+              </Text>
+            </View>
 
             <Text style={styles.listTitle}>Deletes from this phone</Text>
             <ListItem
@@ -131,7 +181,15 @@ const Settings = ({ navigation }: RootStackScreenProps<'Settings'>) => {
 
             <AppButton
               title="Start over…"
-              variant="danger"
+              variant="dangerOutline"
+              icon={
+                <RotateCcw
+                  size={SIZES.iconSm + 2}
+                  color={
+                    counts.total === 0 ? COLORS.textDisabled : COLORS.danger
+                  }
+                />
+              }
               loading={isResetting}
               disabled={counts.total === 0}
               accessibilityHint="Asks for confirmation before deleting anything"
@@ -141,6 +199,14 @@ const Settings = ({ navigation }: RootStackScreenProps<'Settings'>) => {
             {counts.total === 0 ? (
               <Text style={styles.caption}>Nothing to clear.</Text>
             ) : null}
+          </View>
+        </View>
+
+        <View style={styles.about} accessible>
+          <BrandMark size={40} xColor={COLORS.surface} />
+          <View style={styles.aboutText}>
+            <Text style={styles.aboutTitle}>WYXAN Field Report</Text>
+            <Text style={styles.caption}>Version {version}</Text>
           </View>
         </View>
       </View>
@@ -182,7 +248,25 @@ const Settings = ({ navigation }: RootStackScreenProps<'Settings'>) => {
 const styles = StyleSheet.create({
   content: { padding: SPACING.lg, gap: SPACING.xl },
   section: { gap: SPACING.sm },
-  sectionTitle: { ...TYPOGRAPHY.label, color: COLORS.textSecondary },
+  sectionTitle: {
+    ...TYPOGRAPHY.caption,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: COLORS.textSecondary,
+  },
+  tiles: { flexDirection: 'row', gap: SPACING.sm },
+  tile: {
+    flex: 1,
+    gap: SPACING.xs,
+    padding: SPACING.md,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.border,
+  },
+  tileValue: { fontSize: 24, lineHeight: 30, fontWeight: '700' },
+  tileLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  hint: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
   card: {
     gap: SPACING.sm,
     padding: SPACING.lg,
@@ -191,20 +275,41 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.border,
   },
-  body: { ...TYPOGRAPHY.body, color: COLORS.textPrimary },
+  cardHeader: { flexDirection: 'row', gap: SPACING.md, alignItems: 'center' },
+  cardIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: STATUS_APPEARANCE.failed.tint,
+  },
+  cardIntro: { ...TYPOGRAPHY.body, flex: 1, color: COLORS.textPrimary },
   listTitle: {
     ...TYPOGRAPHY.label,
     color: COLORS.textSecondary,
-    marginTop: SPACING.sm,
+    marginTop: SPACING.md,
   },
-  listItem: { flexDirection: 'row', gap: SPACING.sm },
+  listItem: { flexDirection: 'row', gap: SPACING.md, alignItems: 'flex-start' },
+  listIcon: {
+    width: 22,
+    height: 22,
+    marginTop: 1,
+    borderRadius: RADIUS.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   listText: { ...TYPOGRAPHY.body, flex: 1, color: COLORS.textPrimary },
-  button: { marginTop: SPACING.md },
-  caption: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
+  button: { marginTop: SPACING.lg },
+  caption: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  about: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.xs,
   },
+  aboutText: { gap: SPACING.xxs },
+  aboutTitle: { ...TYPOGRAPHY.label, color: COLORS.textPrimary },
   warning: {
     flexDirection: 'row',
     gap: SPACING.sm,

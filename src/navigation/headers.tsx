@@ -12,6 +12,12 @@ import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 const titleOf = (title: unknown, fallback: string): string =>
   typeof title === 'string' ? title : fallback;
 
+/** One line under each tab's title: what the list is, and where it comes from. */
+const TAB_SUBTITLES: Record<string, string> = {
+  Outbox: 'Saved on this phone, uploading on their own',
+  ServerReports: 'What the server has received',
+};
+
 /** Main tabs: no back button; settings is reachable from here. */
 export const renderTabHeader = ({
   navigation,
@@ -20,6 +26,7 @@ export const renderTabHeader = ({
 }: BottomTabHeaderProps) => (
   <AppHeader
     title={titleOf(options.title, route.name)}
+    subtitle={TAB_SUBTITLES[route.name]}
     onOpenSettings={() => navigation.navigate('Settings')}
   />
 );

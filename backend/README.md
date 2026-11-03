@@ -37,7 +37,7 @@ Settings (all optional) are in `.env.example`.
 | ------ | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PUT`  | `/reports/:id/images/:position` | Raw `image/jpeg` body, position 0–4. Over 5,000,000 bytes → **413**. Same slot is overwritten, never duplicated. Optional `X-Content-SHA256` header → **400** if the image arrived damaged. |
 | `POST` | `/reports/:id/commit`           | `{ description, imageCount, createdAt }`. All images must be uploaded first, else **409** with `missing: [positions]`. First call **201**, repeats **200** with the same report.            |
-| `GET`  | `/reports`                      | Complete (committed) reports only, newest received first, with image URLs.                                                                                                                  |
+| `GET`  | `/reports`                      | Complete (committed) reports only, newest first (by when they were made on the phone), with image URLs.                                                                                     |
 | `GET`  | `/health`                       | `{ ok: true }`                                                                                                                                                                              |
 | `GET`  | `/uploads/<id>/<position>.jpg`  | The stored image.                                                                                                                                                                           |
 

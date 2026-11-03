@@ -96,11 +96,11 @@ const byCreatedAt =
 
 /**
  * Groups the Outbox so the most urgent thing is on top:
- * 1. Needs attention: failed reports, newest first.
- * 2. In the queue: the report being worked on first, then waiting reports
- *    oldest first (the order they will upload in).
- * 3. Uploaded: newest first.
- * Empty sections are left out.
+ * 1. Needs attention: failed reports.
+ * 2. In the queue: the report being uploaded right now first (so the work
+ *    in progress is in view), then the waiting ones.
+ * 3. Uploaded.
+ * Inside each group, newest first. Empty sections are left out.
  */
 export const groupOutbox = (items: OutboxItem[]): OutboxSection[] => {
   const attention = items
@@ -108,10 +108,10 @@ export const groupOutbox = (items: OutboxItem[]): OutboxSection[] => {
     .sort(byCreatedAt('newest'));
   const active = items
     .filter(item => isActiveStatus(item.report.status))
-    .sort(byCreatedAt('oldest'));
+    .sort(byCreatedAt('newest'));
   const waiting = items
     .filter(item => isWaitingStatus(item.report.status))
-    .sort(byCreatedAt('oldest'));
+    .sort(byCreatedAt('newest'));
   const uploaded = items
     .filter(item => item.report.status === 'uploaded')
     .sort(byCreatedAt('newest'));
