@@ -104,6 +104,9 @@ const uploadTriggers = createUploadTriggers({
 export const initializeLocalData = async () => {
   await initDatabase();
   await reportService.refresh();
+  // Before the first screen and before any upload work: nothing can be
+  // saving yet, so leftovers can be swept safely.
+  await reportService.cleanUpLeftovers();
   runInBackground(runPipeline());
   uploadTriggers.start();
 };

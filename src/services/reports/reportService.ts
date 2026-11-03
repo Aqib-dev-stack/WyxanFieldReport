@@ -47,6 +47,12 @@ export const createReportService = ({
   let snapshot: Report[] = [];
   const listeners = new Set<() => void>();
 
+  const discardPickedPhotos = async (photos: DraftPhoto[]) => {
+    for (const photo of photos) {
+      await files.deletePickerCopy(photo.uri).catch(() => undefined);
+    }
+  };
+
   const refresh = async () => {
     snapshot = await repository.list();
     listeners.forEach(listener => listener());
@@ -106,10 +112,33 @@ export const createReportService = ({
         throw error;
       }
 
+      // The photos now live in the app's own folder: the picker's
+      // temporary copies are no longer needed (best effort).
+      await discardPickedPhotos(draft.photos);
+
       await refresh();
       // Start compressing right away: it needs no network.
       background.kick();
       return id;
+    },
+
+    /**
+     * Photos removed from the form, or a discarded report: delete the
+     * picker's temporary copies (never a gallery original).
+     */
+    discardPickedPhotos,
+
+    /**
+     * Startup sweep, before any screen or background work runs:
+     * - report folders with no report in the database (only possible if
+     *   the app died in the middle of saving, after copying photos);
+     * - the picker's temporary copies (from a draft that was never saved).
+     */
+    async cleanUpLeftovers(): Promise<void> {
+      await files
+        .removeOrphanFolders(snapshot.map(report => report.id))
+        .catch(() => undefined);
+      await files.clearPickerCopies().catch(() => undefined);
     },
 
     /**
@@ -123,6 +152,9 @@ export const createReportService = ({
       try {
         await repository.deleteAll();
         await files.deleteAllReportFiles();
+        // Nothing of the old reports may stay behind, not even the picker's
+        // temporary copies in the cache.
+        await files.clearPickerCopies().catch(() => undefined);
         await refresh();
       } finally {
         background.resume();

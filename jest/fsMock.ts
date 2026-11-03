@@ -20,6 +20,31 @@ export const moveFile = jest.fn(async (from: string, to: string) => {
 });
 export const stat = jest.fn(async (_path: string) => ({ size: 1_000_000 }));
 export const hash = jest.fn(async (_path: string) => 'f'.repeat(64));
+export const readDir = jest.fn(async (dir: string) =>
+  [...files]
+    .filter(file => file.startsWith(`${dir}/`))
+    .map(file => {
+      const rest = file.slice(dir.length + 1);
+      const name = rest.split('/')[0] ?? rest;
+      const isDir = rest.includes('/');
+      return {
+        name,
+        path: `${dir}/${name}`,
+        size: 0,
+        mtime: null,
+        ctime: null,
+        isDirectory: () => isDir,
+        isFile: () => !isDir,
+      };
+    })
+    .filter(
+      (entry, index, all) =>
+        all.findIndex(e => e.path === entry.path) === index,
+    ),
+);
+/** Test helper: pretend a file exists. */
+export const __addFile = (path: string) => files.add(path);
+export const __files = () => [...files];
 export const unlink = jest.fn(async (path: string) => {
   [...files]
     .filter(file => file === path || file.startsWith(`${path}/`))

@@ -35,9 +35,21 @@ export const useComposeForm = () => {
     );
   }, []);
 
-  const removePhoto = useCallback((id: string) => {
-    setPhotos(prev => prev.filter(photo => photo.id !== id));
-  }, []);
+  const removePhoto = useCallback(
+    (id: string) => {
+      // The picker's temporary copy of a removed photo is deleted right away.
+      reportService
+        .discardPickedPhotos(photos.filter(photo => photo.id === id))
+        .catch(() => undefined);
+      setPhotos(prev => prev.filter(photo => photo.id !== id));
+    },
+    [photos],
+  );
+
+  /** Leaving without saving: drop the picker's temporary copies too. */
+  const discard = useCallback(() => {
+    reportService.discardPickedPhotos(photos).catch(() => undefined);
+  }, [photos]);
 
   const touchDescription = useCallback(() => setDescriptionTouched(true), []);
 
@@ -78,5 +90,6 @@ export const useComposeForm = () => {
     phase,
     saveFailed,
     submit,
+    discard,
   };
 };

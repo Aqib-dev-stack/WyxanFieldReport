@@ -23,11 +23,6 @@ const server = app.listen(config.port, () => {
   console.log(`API on http://localhost:${config.port}`);
   // Never print credentials (screen recordings, shared logs).
   console.log(`MongoDB: ${redactUri(config.mongoUri)}`);
-  console.log(`Images: ${config.uploadDir}`);
-  console.log(`Admin/chaos endpoints: ${config.enableAdmin ? 'on' : 'off'}`);
-  console.log(
-    `App: API_BASE_URL=http://<this computer's Wi-Fi IP>:${config.port} in src/config/api.ts`,
-  );
 });
 
 // A 5 MB photo over 2G (~20–40 KB/s) can take several minutes: give

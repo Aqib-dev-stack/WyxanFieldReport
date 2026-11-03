@@ -24,6 +24,10 @@ const photo = (n: number): DraftPhoto => ({
 /** File storage double that records what exists, with an optional failure. */
 const fakeFiles = (failOnPosition?: number) => {
   const stored = new Set<string>();
+  // The picker's temporary copies in the cache, one per picked photo.
+  const pickerCopies = new Set<string>(
+    [1, 2, 3, 4, 5, 6].map(n => `file:///cache/picked-${n}.jpg`),
+  );
   const storage: FileStorage = {
     copyIntoAppStorage: async (_uri, reportId, position) => {
       if (position === failOnPosition) {
@@ -47,8 +51,17 @@ const fakeFiles = (failOnPosition?: number) => {
     deleteAllReportFiles: async () => stored.clear(),
     sizeOf: async path => (stored.has(path) ? 1_000_000 : null),
     sha256: async () => 'f'.repeat(64),
+    deletePickerCopy: async uri => {
+      pickerCopies.delete(uri);
+    },
+    clearPickerCopies: async () => pickerCopies.clear(),
+    removeOrphanFolders: async known => {
+      [...stored]
+        .filter(path => !known.some(id => path.includes(`/${id}/`)))
+        .forEach(path => stored.delete(path));
+    },
   };
-  return { storage, stored };
+  return { storage, stored, pickerCopies };
 };
 
 const setup = async (failOnPosition?: number) => {
@@ -135,5 +148,46 @@ describe('reportService.startOver', () => {
 
     expect(service.getSnapshot()).toEqual([]);
     expect(files.stored.size).toBe(0);
+  });
+});
+
+describe('leftovers', () => {
+  it("deletes the picker's temporary copies once a report is saved", async () => {
+    const { service, files } = await setup();
+    await service.createReport({
+      description: 'Crack',
+      photos: [photo(1), photo(2)],
+    });
+    expect(files.pickerCopies.has(photo(1).uri)).toBe(false);
+    expect(files.pickerCopies.has(photo(2).uri)).toBe(false);
+    expect(files.pickerCopies.has(photo(3).uri)).toBe(true); // not part of it
+  });
+
+  it('keeps the picker copies when saving fails, so the user can retry', async () => {
+    const { service, files } = await setup(0);
+    await expect(
+      service.createReport({ description: 'Crack', photos: [photo(1)] }),
+    ).rejects.toThrow();
+    expect(files.pickerCopies.has(photo(1).uri)).toBe(true);
+  });
+
+  it('start over leaves no picker copies behind', async () => {
+    const { service, files } = await setup();
+    await service.createReport({ description: 'A', photos: [photo(1)] });
+    await service.startOver();
+    expect(files.pickerCopies.size).toBe(0);
+  });
+
+  it('the startup sweep removes folders of reports that are not in the database', async () => {
+    const { service, files } = await setup();
+    await service.createReport({ description: 'Kept', photos: [photo(1)] });
+    // A folder left by a crash in the middle of a save:
+    files.stored.add('/docs/reports/crashed/0-original.jpg');
+
+    await service.cleanUpLeftovers();
+
+    expect([...files.stored].some(p => p.includes('/crashed/'))).toBe(false);
+    expect(files.stored.size).toBe(1);
+    expect(files.pickerCopies.size).toBe(0);
   });
 });

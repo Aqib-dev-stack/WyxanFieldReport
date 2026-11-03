@@ -85,7 +85,10 @@ const Compose = ({ navigation }: RootStackScreenProps<'Compose'>) => {
         {
           text: 'Discard',
           style: 'destructive',
-          onPress: () => navigation.dispatch(data.action),
+          onPress: () => {
+            form.discard();
+            navigation.dispatch(data.action);
+          },
         },
       ],
     );
