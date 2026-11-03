@@ -308,12 +308,23 @@ export const createUploadEngine = ({
     }
   };
 
+  // A trigger that arrives while a run is going (e.g. "network back" just as
+  // the run is ending) must not be lost: remember it and run once more.
+  let rerunRequested = false;
+
   const run = (): Promise<void> => {
-    if (!current) {
-      current = runOnce().finally(() => {
-        current = null;
-      });
+    if (current) {
+      rerunRequested = true;
+      return current;
     }
+    current = (async () => {
+      do {
+        rerunRequested = false;
+        await runOnce();
+      } while (rerunRequested && !paused);
+    })().finally(() => {
+      current = null;
+    });
     return current;
   };
 

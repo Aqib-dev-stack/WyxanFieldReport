@@ -77,3 +77,4 @@ yarn-error.log
 
 # Database copied from a device (npm run db:pull)
 .local-db/
+

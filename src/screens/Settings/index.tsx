@@ -11,6 +11,7 @@ import {
   STATUS_APPEARANCE,
   TYPOGRAPHY,
 } from '@config';
+import { API_BASE_URL } from '@config/api';
 import { useStartOver } from '@hooks/useStartOver';
 import { formatPhotoCount } from '@utils/formatters';
 
@@ -86,6 +87,20 @@ const Settings = ({ navigation }: RootStackScreenProps<'Settings'>) => {
           </View>
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            Upload server
+          </Text>
+          <View style={styles.card}>
+            <Text style={styles.body} selectable>
+              {API_BASE_URL}
+            </Text>
+            <Text style={styles.caption}>
+              The computer running the backend, on the same Wi-Fi as this phone
+              (set in src/config/api.ts).
+            </Text>
+          </View>
+        </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle} accessibilityRole="header">
             Start over

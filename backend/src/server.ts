@@ -26,7 +26,7 @@ const server = app.listen(config.port, () => {
   console.log(`Images: ${config.uploadDir}`);
   console.log(`Admin/chaos endpoints: ${config.enableAdmin ? 'on' : 'off'}`);
   console.log(
-    `Phone over USB: adb reverse tcp:${config.port} tcp:${config.port}`,
+    `App: API_BASE_URL=http://<this computer's Wi-Fi IP>:${config.port} in src/config/api.ts`,
   );
 });
 

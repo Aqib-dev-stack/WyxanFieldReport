@@ -1,3 +1,6 @@
+import NetInfo from '@react-native-community/netinfo';
+import { AppState } from 'react-native';
+
 import { REPORT_LIMITS } from '@config';
 import { API_BASE_URL } from '@config/api';
 import { initDatabase, reportsRepository } from '@db';
@@ -6,7 +9,9 @@ import { fileStorage, reportFolder } from '@services/files/fileStorage';
 import { compressImage } from '@services/images/imageCompressor';
 import { createImagePreparer } from '@services/images/imagePreparer';
 import { createReportService } from '@services/reports';
+import { createUploadTriggers } from '@services/triggers/uploadTriggers';
 import { createUploadEngine } from '@services/upload/uploadEngine';
+import { toNetworkStatus } from '@utils/network';
 import { uuidv4 } from '@utils/uuid';
 
 /**
@@ -71,15 +76,34 @@ export const uploadEngine = createUploadEngine({
 });
 
 /**
+ * "Try now": compress anything pending, then upload, skipping the backoff
+ * wait of reports that were only waiting for the network.
+ */
+const retryNow = async () => {
+  await imagePreparer.run();
+  await uploadEngine.retryWaitingNow();
+};
+
+const uploadTriggers = createUploadTriggers({
+  subscribeNetwork: listener =>
+    NetInfo.addEventListener(state => listener(toNetworkStatus(state))),
+  subscribeAppState: listener => {
+    const subscription = AppState.addEventListener('change', listener);
+    return () => subscription.remove();
+  },
+  onNetworkBack: () => runInBackground(retryNow()),
+  onForeground: () => runInBackground(retryNow()),
+});
+
+/**
  * Startup: open + migrate the database and load the local reports (the
  * first screen waits for this), then resume unfinished compression and
- * uploads in the background (the screen does not wait for that).
+ * uploads in the background (the screen does not wait for that), and start
+ * listening for "network back" and "app foreground".
  */
 export const initializeLocalData = async () => {
   await initDatabase();
   await reportService.refresh();
   runInBackground(runPipeline());
+  uploadTriggers.start();
 };
-
-/** Kicks the pipeline (used by triggers such as "network is back"). */
-export const kickPipeline = () => runInBackground(runPipeline());

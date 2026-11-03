@@ -119,9 +119,22 @@ const setup = async ({ fileSize = 2_000_000 } = {}) => {
   const server = createFakeServer();
   let clock = Date.parse('2026-11-02T09:00:00.000Z');
   const timers: { callback: () => void; at: number }[] = [];
+  // Lets a test act at the exact moment the engine has read the list.
+  const hooks: { afterList: (() => Promise<void>) | null } = {
+    afterList: null,
+  };
 
   const engine = createUploadEngine({
-    repository,
+    repository: {
+      ...repository,
+      list: async () => {
+        const reports = await repository.list();
+        const hook = hooks.afterList;
+        hooks.afterList = null;
+        await hook?.();
+        return reports;
+      },
+    },
     api: server.api,
     files: { sizeOf: async () => fileSize, sha256: async () => 'f'.repeat(64) },
     maxImageBytes: 5_000_000,
@@ -179,6 +192,7 @@ const setup = async ({ fileSize = 2_000_000 } = {}) => {
     server,
     engine,
     timers,
+    hooks,
     saveReady,
     advanceToNextRetry,
   };
@@ -347,6 +361,37 @@ describe('uploadEngine', () => {
 
     expect(server.calls.upload).toBe(3);
     expect(server.calls.commit).toBe(1);
+  });
+
+  it('network back: a report waiting for the network goes now, not after its backoff', async () => {
+    const { engine, server, repository, saveReady, timers } = await setup();
+    await saveReady('m', 1);
+    server.script.upload = [{ kind: 'offline' }];
+
+    await engine.run();
+    expect((await repository.getById('m'))?.status).toBe('waitingNet');
+    expect(timers).toHaveLength(1); // a retry is scheduled for later…
+
+    await engine.retryWaitingNow(); // …but the network is back now
+
+    expect((await repository.getById('m'))?.status).toBe('uploaded');
+  });
+
+  it('a trigger that arrives while a run is concluding "nothing to do" is not lost', async () => {
+    const { engine, server, repository, saveReady, hooks } = await setup();
+    await saveReady('n', 1);
+    server.script.upload = [{ kind: 'offline' }];
+    await engine.run(); // now waitingNet, retry scheduled for later
+
+    // The engine reads the list (n not due yet); right then the network
+    // comes back: n becomes due and a run is requested mid-run.
+    hooks.afterList = async () => {
+      await repository.update('n', { nextAttemptAt: null });
+      engine.run().catch(() => undefined);
+    };
+    await engine.run();
+
+    expect((await repository.getById('n'))?.status).toBe('uploaded');
   });
 
   it('pause aborts the upload in flight and leaves the report to resume', async () => {

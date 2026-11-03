@@ -55,7 +55,27 @@ The API lives in [`backend/`](backend/README.md): Express + MongoDB, images on
 disk, idempotent by the phone's report UUID, with chaos modes (drop, lost
 response, 500, 413, hang, slow) for testing the upload engine. Set
 `MONGODB_URI` in `backend/.env` (local MongoDB or Atlas), then `npm start` in
-`backend/`.
+`backend/`. The app finds it through `API_BASE_URL` (below).
+
+### Pointing the app at the backend
+
+The phone and the computer running the backend are on the same Wi-Fi. Set the
+computer's IP in `src/config/api.ts`:
+
+```ts
+export const API_BASE_URL = 'http://192.168.1.23:4000'; // macOS: ipconfig getifaddr en0
+```
+
+Debug and release builds both use it; change it when the network (and so the
+IP) changes. Settings → **Upload server** shows the address the app is using.
+
+Because the traffic goes over Wi-Fi, airplane mode on the phone really cuts it
+off from the server. (Over a USB cable with `adb reverse`, it would not.)
+
+**HTTP in release builds.** React Native forces `usesCleartextTraffic=false`
+for release, which would block `http://` to the local backend.
+`android/app/src/main/res/xml/network_security_config.xml` allows it, for this
+demo setup only; in production the API would be HTTPS and that file deleted.
 
 ## Local database
 
@@ -217,11 +237,30 @@ server refuses a damaged image. The engine also re-checks every file is
 **Single-flight**, and **pausable**: Start over aborts the request in flight
 and waits before deleting anything.
 
-**Runs** at app start, after a report's photos are compressed, and on its own
-retry timer. Network-regained and app-foreground triggers come next.
+**When it runs** (`src/services/triggers/uploadTriggers.ts` + `src/services/index.ts`):
 
-**Try it against the chaos modes:** start the backend, `adb reverse tcp:4000
-tcp:4000`, then e.g.
+| Trigger                              | What happens                                                   |
+| ------------------------------------ | -------------------------------------------------------------- |
+| App start                            | Resume unfinished compression and uploads                      |
+| Report saved                         | Compress its photos (no network needed), then upload           |
+| Retry timer                          | The engine's own wake-up when a backoff ends                   |
+| Network back (offline → online)      | Reports waiting for the network go now, skipping their backoff |
+| App foreground (background → active) | Same as network back                                           |
+| "Try again" on a failed report       | Back in the queue                                              |
+
+A trigger that arrives while a run is going is remembered and causes one more
+run, so it is never lost. NetInfo is only a cue: the engine never skips a
+request because NetInfo says "offline"; it tries and judges by the result.
+
+**In the background.** Uploads keep going while Android lets the app run.
+When Android suspends it (screen off for a while, Doze) or kills it, nothing
+is lost: every step is in SQLite, and the work resumes at the next app start,
+foreground or network-back. A foreground service or a periodic WorkManager job
+would let uploads continue in a pocket for hours; both were left out on
+purpose (extra native library, permissions and a persistent notification) and
+are the natural next step.
+
+**Try it against the chaos modes:** start the backend, then e.g.
 `curl -X POST localhost:4000/admin/chaos -H 'Content-Type: application/json' -d '{"mode":"drop","times":2}'`
 (see `backend/README.md`).
 

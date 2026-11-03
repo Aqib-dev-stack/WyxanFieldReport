@@ -18,11 +18,9 @@ npm start
 `.env` is git-ignored: credentials never go into `.env.example` or the repo.
 The server prints the database host on startup with the password masked.
 
-The API listens on `http://localhost:4000`. For the app on a phone over USB:
-
-```sh
-adb reverse tcp:4000 tcp:4000
-```
+The API listens on port 4000 on every network interface. The app reaches it
+through `API_BASE_URL` in the app's `src/config/api.ts`: this computer's IP on
+the same Wi-Fi as the phone, e.g. `http://192.168.1.23:4000`.
 
 Settings (all optional) are in `.env.example`.
 

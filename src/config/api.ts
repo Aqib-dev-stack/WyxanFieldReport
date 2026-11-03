@@ -1,9 +1,13 @@
 /**
- * Where the backend is. `localhost` works on a USB-connected phone or an
- * emulator after `adb reverse tcp:4000 tcp:4000`. Plain HTTP is allowed in
- * debug builds only (Android's usesCleartextTraffic).
+ * Where the backend is: this Mac's IP on the same Wi-Fi as the phone, port
+ * 4000 (macOS: `ipconfig getifaddr en0`). Change it here when the network,
+ * and so the IP, changes. Debug and release builds both use it.
+ *
+ * Over Wi-Fi, airplane mode on the phone really cuts it off from the server
+ * (over a USB cable with `adb reverse` it would not). Plain HTTP is allowed by
+ * android/app/src/main/res/xml/network_security_config.xml.
  */
-export const API_BASE_URL = 'http://localhost:4000';
+export const API_BASE_URL = 'http://192.168.100.159:4000';
 
 export const API_TIMEOUTS = {
   /** Small JSON requests (commit, list). */
